@@ -112,7 +112,9 @@ $$
 \forall (i, j) \in V; c(i) \neq c(j)
 $$
 
-To turn this into SAT, we create boolean variables:
+To turn this into SAT, we essentially want to create a boolean function $f$ which will be satisfiable only if there's a valid color assignment to each vertices from the k colors:
+
+Create boolean variables:
 
 $$
 C_{c,v}
@@ -137,5 +139,44 @@ To do this, we state that to assign exactly one color to a vertex:
 - every vertex must have at least one color assignment
 - every vertex must have at most one color assignment
 
-Essentially, we want a function that returns true 
+To say that every vertex must have at least one color, we essentially want:
 
+$$
+\forall v \in V, \bigvee_{c \in C} C_{c, v}
+$$
+
+To say that every vertex must have at most one color, we want something like:
+
+- for every vertex, for every pair of boolean variables representing that vertex, it can never be that both of them are true.
+
+That is, we get the truth table:
+
+| p | q | desired |
+| --------------- | --------------- | --------------- |
+| 0 | 0 | 1 |
+| 0 | 1 | 1 |
+| 1 | 0 | 1 |
+| 1 | 1 | 0 |
+
+So the desired boolean function is $\neg (p \land q)$
+
+So essentially:
+
+$$
+\forall v in V, \bigwedge_{i , j \in C \land i < j}(\neg C_{i, v} \lor \neg C_{j, v})
+$$
+
+We must also constraint that no neighboring vertices should have the same color. That is to say, if we one of the boolean variable with the same $c$ is true (we assigned some color to a one of the vertex), it we want the whole expression to be false when the other guy is also true.
+
+| p | q | desired |
+| --------------- | --------------- | --------------- |
+| 0 | 0 | 1 |
+| 0 | 1 | 1 |
+| 1 | 0 | 1 |
+| 1 | 1 | 0 |
+
+So it's going to be $\neg (p \land q)$ again.
+
+$$
+\forall (u, v) in E, \forall c \in C, \neg C_{c, u} \lor \neg C_{c, v}
+$$
