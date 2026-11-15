@@ -1,0 +1,3 @@
+c NAND can be expressed in CNF form as NOT(A AND B) = NOT A or NOT B. this should also return true
+p cnf 2 1
+-1 -2 0

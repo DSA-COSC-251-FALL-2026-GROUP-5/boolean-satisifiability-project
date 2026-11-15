@@ -1,0 +1,4 @@
+c A AND NOT A is always false, thus, unsatisifiable
+p cnf 1 1
+1 0
+-1 0

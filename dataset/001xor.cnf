@@ -1,0 +1,4 @@
+c this is an encoding for XOR. XOR can be written as (!A + B)(A + !B). This is clearly satisifiable
+p cnf 2 2
+-1 2 0
+1 -2 0
