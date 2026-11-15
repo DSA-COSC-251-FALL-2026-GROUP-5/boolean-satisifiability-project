@@ -1,2 +1,2 @@
 #!/usr/bin/env bash
-java -cp "out:lib/*" $1
+java -cp "out:lib/*" "$@"

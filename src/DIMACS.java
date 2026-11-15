@@ -24,6 +24,11 @@ class DIMACS{
           continue;
         }
 
+        if (splittedLine[0].equals("%")){
+          // we use % to indicate the end of the expression
+          break;
+        }
+
         if (splittedLine[0].equals("c")){
           // if the line contains a comment, continue
           continue;
