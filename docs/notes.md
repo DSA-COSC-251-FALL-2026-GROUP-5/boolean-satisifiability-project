@@ -343,4 +343,59 @@ So DPLL looks like:
 
 We also need to do branching for guessing.
 
+# Counting up by one on a bitset
+
+Let's say that we have:
+
+```java
+boolean[] arr = {false, false, false};
+```
+
+the next step is:
+
+```
+{true, false, false}
+```
+
+next is:
+
+```
+{false, true, false}
+```
+
+next is:
+
+```
+{true, true, false}
+```
+
+to do a count up (let's say that LSB is on the left), what we do is say, we store a temporary rollover variable, and say:
+
+```java
+boolean rollover = true;
+for (int i = 0; i < arr; i++){
+  if (rollover){
+    // if we did have a rollover, then first see if we'll rollover
+    rollover = ! (a ^ 1);
+    // if we didn't have a rollover, then just 
+    arr[i] = ! arr[i];
+  }
+}
+```
+
+we can simplify this:
+
+```java
+boolean rollover = true;
+int i = 0;
+while (rollover){
+  if (i >= arr[i].length){
+    break;
+  }
+  rollover = ! (arr[i] ^ 1);
+  arr[i] = ! arr[i];
+  i++;
+}
+```
+
 
