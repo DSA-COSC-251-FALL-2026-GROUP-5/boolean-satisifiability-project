@@ -283,6 +283,7 @@ Essentially, the universal API is by using the DIMACS CNF file format. So we're 
 We also need to somehow generate the clauses for Sudoku and also for K-coloring.
 
 I think internally, we should probably just use the array representation, and then just construct it into DIMACS 
+
 ## Bruteforce
 
 Essentially, we can just do bruteforce by setting the assignment all to false, incrementing it one by one and then evaluate it.
@@ -343,6 +344,32 @@ So DPLL looks like:
 
 We also need to do branching for guessing.
 
+Main idea:
+
+The main idea is to treat the satisifiability problem as a Constraint Satisifiability Problem, that is to say, each clause is a constraint, and we ask whether there's any kind of stuff that actually satisfies the constraint. If not, that there's nothing in the universe that can satisfy the constraint, and I guess it would amount to having "no solution" etc.
+
+For a constraint satisifiability problem, what we do is a depth first search.
+
+So essentially, we build a tree (a binary tree). At each layer, we assign either "true" or "false" to the one of the variables, and we continue on-wards.
+
+> [!NOTE]
+> Notice that if we have for example, variables, a, b, c; we can have the tree be a, then b then c. Or we could have b, then a, then c, etc. There are probably ways to choose which layer to pick next dynamically, although making the tree very dynamic (a, b, c changes as the depth first search continues) might be a bit difficult.
+
+Before we branch out, we essentially check a couple of things:
+
+- unit clauses
+- pure literal elimination
+
+## general idea
+
+base cases
+- if the expression has no more clauses, then it's satisfied (the idea is that, if we have no constraints, then anything satisfies our constraint)
+- if there's a clause without any literals, then it's false (this a bit weird, but we say that the constraint cannot be satisifed no matter what or something... Either way, in the CNF, an empty clause is the same as a clause with just "false")
+
+Unit clauses simplify our expression, to say, ok, when I assign a value to a literal, it doesn't change whether the simplified expression is satisfiable or unsatisfiable. 
+
+For implementation, this is going to be a bit tough... Because there are times when you assign varaibles because you're doing depth first search, but there are also other times when you're assigning variables because it has to be the case... But the thing is, the "it has to be the case" is probably only the case for the current branch.
+
 # Counting up by one on a bitset
 
 Let's say that we have:
@@ -397,5 +424,4 @@ while (rollover){
   i++;
 }
 ```
-
 
