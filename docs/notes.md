@@ -425,3 +425,44 @@ while (rollover){
 }
 ```
 
+## DPLL algorithm outline
+
+```python
+def dpll(expression, assignments):
+  # so basically, we're going to write this recursively
+  # to contract is that assignments are either true, false, or unassigned (None)
+  # the function essentially returns whether or not it's satisfiable if we lock in the assigned variables, 
+  # and choose all possible values for the unassigned variables
+  
+  # so the first step is to simplify the expression if it can be simplified (if we can assign particular variables immediately without changing whether it's satisfiable or satisfiable)
+  changes = simplify(expression, assignments)
+  # changes will contain a dictionary of the "change history" that the simplification did
+  
+  # the base case is whether we've assigned everything:
+  if not (None in assignments):
+    # evaluate is just going to plug in all of the assignments (non-None assingments, and give the answer)
+    # it's going to return a true if it evaluates to true, false if it evaluates to false (I think this still satisfy our contract)
+    return evaluate(expression, assignments)
+  
+  # if there's still some stuff unassigned, then we essentially pick a variable to assign.
+  # pick will be a function because, we might use a different heuristic other than "pick the first unassigned variable" (although making sure no redundant computation would be kinda hard)
+  variable_to_assign = pick(assignments)
+  
+  # so we'll first try to assign it true
+  assignments[variable_to_assign - 1] = True
+  changes[variables_to_assign - 1] = True #Note: although this looks like an array, hash map would be better because we dont want to copy the whole array, we only want differential backups
+  if (dpll(expression, assignments)):
+    # so if it does return a True, meaning that there was a satisifiable assignment, just say yes
+    return True
+
+  # if after setting it as True, we get no satisifiable assignments, then we set it to False and try again
+  
+  assignments[variables_to_assign - 1] = False
+  changes[variables_to_assign - 1] = False
+
+  if (dpll(expression, assignments)):
+    return True
+
+  # now if after all that, we didn't get any truth assignments, then it's unsatisfiable for that particular branch
+  return False
+```
