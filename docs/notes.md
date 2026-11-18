@@ -515,3 +515,6 @@ def dpll(expression, assignments):
   undo(assignments, changes)
   return False
 ```
+
+> [!NOTE]
+> Think about the case when we don't use a particular variable in an expression
