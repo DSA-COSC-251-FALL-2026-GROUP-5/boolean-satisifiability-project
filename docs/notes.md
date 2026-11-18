@@ -427,6 +427,54 @@ while (rollover){
 
 ## DPLL algorithm outline
 
+### Unit propagation
+
+If we have a unit literal:
+
+$$
+a \land (\neg a \lor b)
+$$
+
+We know that if we set $a$ to false, then that whole branch isn't going to be satisfiable.
+
+So we need to set $a$ to true, as such, it's a simplification that can be done by restricting $a = True$. That's to say, when we simplify, we set $a = True$ and remove the branch where $b = False$ in our search, and we continue.
+
+### Pure Literal Elimination
+
+If we have a pure literal, that is all instances of the literal contains the same sign, then what we'll need to do is that we can remove it, so we can set it to true if there's no negation, and false if there's a negation.
+
+For example:
+
+$$
+(\neg a \lor b) \land (\neg a \lor c)
+$$
+
+We can set $\neg a$ to be true, so that we don't consider $\neg a$ anymore.
+
+Now here's the iterative step. Inside of `simplify`, we continue doing this simplification until we hit a deadend, that is, there's no unit clauses, and no more pure literals.
+
+Now in that sense, after we've done `simplify`, we now have no choice but to choose another assignment and then continue on the recursive call, however, if we've simplified iteratively, until we have assigned like everything, then it's satisfiable, since we choose all possible options such that we maintain a possible satisfiable solution.
+
+Even something like a contradiction:
+
+$$
+a \land (\neg a)
+$$
+
+If we do unit propagation, pure literal elimination iteratively, then here's what we can do:
+
+Using pure literal elimination, we say $a$ has to be True
+
+So our assignment array looks like `[true]`
+
+Now we say ok, `simplify` terminates when there's no None left.
+
+Now we exit out of `simplify`, we go into the `if None in assignments` condition, we'll see that we get a false, thus, for that particular branch, it's automatically unsatisfiable, or if we do get a true, then we've found a truth assignment, thus, it's satisifiable.
+
+Now even if we haven't assigned everything yet after the simplification process, we still know that whatever was done in the `simplify` call was eliminating a bunch of branches that immediately makes the whole thing false (by setting a clear assignment to some literals in the `assignments` array).
+
+We can then only look at the branch that `simplify` has narrowed down for us, and then choose a new assignment for some literal and then recusively call the same function. Now, if that particular branch actually returns a `true`, then that's good, we'll just state that it's satisifiable. Otherwise, we'll set it to false, and look at that branch, and if they're both `false`, then ew say ok, given that you have already assigned like all of this in `assignments`, for these particular unassigned literals in `assignments`, no matter what you assign them to, they'll always return a false for the expression.
+
 ```python
 def dpll(expression, assignments):
   # so basically, we're going to write this recursively
@@ -437,7 +485,7 @@ def dpll(expression, assignments):
   # so the first step is to simplify the expression if it can be simplified (if we can assign particular variables immediately without changing whether it's satisfiable or satisfiable)
   changes = simplify(expression, assignments)
   # changes will contain a dictionary of the "change history" that the simplification did
-  
+ 
   # the base case is whether we've assigned everything:
   if not (None in assignments):
     # evaluate is just going to plug in all of the assignments (non-None assingments, and give the answer)
@@ -464,5 +512,6 @@ def dpll(expression, assignments):
     return True
 
   # now if after all that, we didn't get any truth assignments, then it's unsatisfiable for that particular branch
+  undo(assignments, changes)
   return False
 ```
