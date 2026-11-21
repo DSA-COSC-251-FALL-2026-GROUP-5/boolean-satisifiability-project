@@ -1,6 +1,5 @@
 import java.lang.reflect.Array;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -9,92 +8,191 @@ class DPLL {
       Map.entry(-1, false),
       Map.entry(1, true)));
 
-  public static ArrayList<Integer> simplify(CNF cnf, Boolean[] assignment) {
-    ArrayList<Integer> changes = new ArrayList<Integer>();
-    Boolean foundUnitLiteral;
-    Boolean performedPureElimination;
+  public static boolean evaluateLiteral(int literal, Boolean[] assignment) {
+    if (literal > 0) {
+      return assignment[literal - 1];
+    }
+    return !assignment[-literal - 1];
+  }
 
-    do {
-      foundUnitLiteral = false;
-      performedPureElimination = false;
-      // first, we do try to find a new unitLiteral
-
-      for (ArrayList<Integer> clause : cnf.expression) {
-        // for every clause, we then loop to try and find a unit literal
-        Integer unassignedCount = 0;
-        Integer unassignedLiteral = null;
-        for (Integer literal : clause) {
-          Integer sign = Integer.signum(literal);
-          if (assignment[sign * literal - 1] == null) {
-            unassignedCount++;
-            unassignedLiteral = literal;
-            continue;
-          }
-
-          // now we know that what we have is assigned
-          if (signToBoolean.get(sign) ^ assignment[sign * literal - 1]) {
-            // 0, 0 -> 0; 0, 1 -> 1; 1, 1, 0-> 1; 1, 1 -> 0
-            // if whatever is inside evaluates to true, then the whole clause is true, so we
-            // skip
-            break;
-          }
-          // now if it evauluates to false on the otherhand, do nothing
+  public static Boolean performUnitPropagation(CNF cnf, Boolean[] assignment, ArrayList<Integer> changes){
+    Boolean foundUnitLiteral = false;
+    for (ArrayList<Integer> clause : cnf.expression) {
+      // for every clause, we then loop to try and find a unit literal
+      Integer unassignedCount = 0;
+      Integer unassignedLiteral = null;
+      Boolean isClauseSatisifed = false;
+      for (Integer literal : clause) {
+        // we need to find clauses that:
+        // - doesn't have an assigned true (the clause would be satisified in that case)
+        // - have one unassigned value and the rest are false
+        Integer sign = Integer.signum(literal);
+        if (assignment[sign * literal - 1] == null) {
+          unassignedCount++;
+          unassignedLiteral = literal;
+          continue;
         }
-        if (unassignedCount == 1) {
-          // if we have found exactly one unassignedCount
-          foundUnitLiteral = true;
-          // now if we have found a unit literal, we must set it to a variable such that
-          // it's true
-          Integer sign = Integer.signum(unassignedLiteral);
-          assignment[sign * unassignedLiteral - 1] = signToBoolean.get(sign);
-          // changes will always indicate that we assigned a particular value to a
-          // previously unassigned variable
-          // this is fine because, for changes in dpll, we can undo what we assigned,
-          // however, the simplify method will probably
-          // change a bunch of stuff, so to undo, we just loop through it and set it back
-          // to "unassigned"
-          changes.add(sign * unassignedLiteral);
+
+        // now we know that what we have is assigned
+        if (signToBoolean.get(sign) ^ assignment[sign * literal - 1]) {
+          // 0, 0 -> 0; 0, 1 -> 1; 1, 1, 0-> 1; 1, 1 -> 0
+          // if whatever is inside evaluates to true, then the whole clause is true, so we
+          // raise the satisifed flag and skip the rest
+          isClauseSatisifed = true;
           break;
         }
+        // now if it evauluates to false on the otherhand, do nothing
       }
-      // now we perform pure elimination
-      // we need to keep track of whether there exists a literal where its sign
-      // doesn't change
-      // I think we have no choice but to use a bitset of some kind
-      // null if it's unassigned, false if it's if the sign changes, true if the sign
-      // doesn't change
-      // also, i think we have no choice but to loop through the entire expression,
-      // and then search for a "true" in our array (for every no sign change, we set
-      // it such that we maintain possible satisifiability in that branch)
+      if (isClauseSatisifed &&unassignedCount == 1) {
+        // if we have found exactly one unassignedCount
+        foundUnitLiteral = true;
+        // now if we have found a unit literal, we must set it to a variable such that
+        // it's true
+        Integer sign = Integer.signum(unassignedLiteral);
+        assignment[sign * unassignedLiteral - 1] = signToBoolean.get(sign);
+        // changes will always indicate that we assigned a particular value to a
+        // previously unassigned variable
+        // this is fine because, for changes in dpll, we can undo what we assigned,
+        // however, the simplify method will probably
+        // change a bunch of stuff, so to undo, we just loop through it and set it back
+        // to "unassigned"
+        changes.add(sign * unassignedLiteral);
+        break;
+      }
+    }
+    return foundUnitLiteral;
+  }
 
-      // so pureLiterals will contain the following:
-      // -1 if it's a pure literal of negative sign
-      // 1 if it's a pure literal of positive sign
-      // 0 if it's not a pure literal
-      // null if we haven't found it
-      //
-      // Also, take note that we must skip the clauses that are already satisified
-      Integer[] pureLiterals = new Integer[cnf.variables];
+  public static Boolean performPureLiteralElimination(CNF cnf, Boolean[] assignment, ArrayList<Integer> changes){
+    Boolean hasPureLiteral = false;
+    // so pureLiterals will contain the following:
+    // -1 if it's a pure literal of negative sign
+    // 1 if it's a pure literal of positive sign
+    // 0 if it's not a pure literal
+    // null if we haven't found it
+    //
+    // Also, take note that we must skip the clauses that are already satisified
+    Integer[] pureLiterals = new Integer[cnf.variables];
 
-      for (ArrayList<Integer> clause : cnf.expression) {
-        // for every clause, we then loop to try and find a unit literal
-        for (Integer literal : clause) {
-          // TODO: fill in the blank
+    for (ArrayList<Integer> clause : cnf.expression) {
+      for (Integer literal : clause) {
+        Integer sign = Integer.signum(literal);
+        if (pureLiterals[sign * literal - 1] == null){
+          // if this is the first time we have encountered it, store its sign
+          pureLiterals[sign * literal - 1] = sign;
+          continue;
+        };
+
+        if (pureLiterals[sign*literal - 1] == -1 && sign == -1){
+          // if it's of negative sign, if it's still of negative sign, we're ok
+          continue; 
         }
+
+        if (pureLiterals[sign*literal - 1] == 1 && sign == 1){
+          // same logic applies for postive sign
+          continue; 
+        }
+
+        // now otherwise, its either:
+        // - the stored sign was -1 but we got 1
+        // - the stored sign was 1 but we got -1
+        // - the stored sign was 0
+        // in all cases, we can store 0
+        pureLiterals[sign*literal - 1] = 0;
       }
+    }
+    // after we've have done this, we should now get an answer to the question "is this literal a pure literal?" 
+    // in the form of the pureLiterals array
 
-      // suppose that we have assigned everything.
-      // there won't be any unit literals
-      // moreover, there won't be any pure elimination either
-    } while (foundUnitLiteral || performedPureElimination);
+    for (int i = 0; i < pureLiterals.length; i++){
+      if (pureLiterals[i] == -1){
+        // if it contains pure literals of only negation in front, set it to false
+        assignment[i] = false;
+        hasPureLiteral = true;
+      }
+      else if(pureLiterals[i] == 1){
+        // same logic applies for the true assignment
+        assignment[i] = true;
+        hasPureLiteral = true;
+      }
+      // otherwise, do nothing
+    }
+    return hasPureLiteral;
+  }
 
+  public static ArrayList<Integer> simplify(CNF cnf, Boolean[] assignment) {
+    ArrayList<Integer> changes = new ArrayList<Integer>();
+    Boolean performedUnitPropagation;
+    Boolean performedPureElimination;
+    do {
+      performedUnitPropagation = false;
+      performedPureElimination = false;
+      // first, we do try to find a new unitLiteral
+      performedUnitPropagation = performUnitPropagation(cnf, assignment, changes);
+      // now we do pure elimination
+      performedPureElimination = performPureLiteralElimination(cnf, assignment, changes);
+    } while (performedUnitPropagation || performedPureElimination);
     return changes;
+  }
+
+  public static Integer pick(Boolean[] assignment){
+    // returns the next literal to assign (follows 1st index as in DIMACS CNF)
+    // if we return null, then it's all assigned
+    Integer chosenLiteral = null;
+    // right now, just pick the first unassigned one we see
+    for (int i = 0; i < assignment.length; i++){
+      if (assignment[i] == null){
+        chosenLiteral = i;
+        break;
+      }
+    }
+    return chosenLiteral + 1;
+  }
+
+  public static void undo(Boolean[] assignment, ArrayList<Integer> changes){
+    for (Integer changedLiteral : changes){
+      assignment[changedLiteral - 1] = null;
+    }
   }
 
   public static boolean dpll(CNF cnf, Boolean[] assignment) {
     // now first of all, we simplify
+    ArrayList<Integer> changes = simplify(cnf, assignment);
+    Integer chosenLiteral = pick(assignment);
+    if (chosenLiteral == null){
+      // if we have assigned all values, then simply evaluate it
+      boolean assignmentResult = cnf.expression.stream().allMatch(
+        clause -> clause.stream().anyMatch(literal -> evaluateLiteral(literal, assignment)));
 
-    return true;
+      if (assignmentResult){
+        // if it's true, then we have found a satisifying assignment
+        return true; 
+      }
+
+      // if we got an unsatisifiable assignment, then we have reached a deadend, and we must undo our changes and return false
+      undo(assignment, changes); 
+      return false;
+    }
+    changes.add(chosenLiteral);
+    // now if we still have some unassigned variables left, then we take the chosen literal, assign it a value and see what happens
+    assignment[chosenLiteral - 1] = true;
+    Boolean leftResult = dpll(cnf, assignment);
+    if (leftResult){
+      // if it's satisifed, then return true
+      return true;
+    }
+    // if its false, try again but with a false assignment instead
+    assignment[chosenLiteral - 1] = false;
+    Boolean rightAssignment = dpll(cnf, assignment);
+    if (rightAssignment){
+      return true;
+    }
+    // now if both branches are unsatisifiable, then the main branch is unsatisifiable
+    // NOTE: notice that when its unsatisifiable, we undo everything so that when the recusrive call returns, the assignment array would look unchanged
+    // however, when we do get a satisifying assignment, we don't undo, thus, the assignment array will contain the assignment that makes the formula satisifiable
+    
+    undo(assignment, changes);
+    return false;
   }
 
   public static Result sat(CNF cnf) {
