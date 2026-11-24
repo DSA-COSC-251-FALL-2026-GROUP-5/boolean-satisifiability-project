@@ -1,4 +1,3 @@
-import java.lang.reflect.Array;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
@@ -34,8 +33,8 @@ class DPLL {
         }
 
         // now we know that what we have is assigned
-        if (signToBoolean.get(sign) ^ assignment[sign * literal - 1]) {
-          // 0, 0 -> 0; 0, 1 -> 1; 1, 1, 0-> 1; 1, 1 -> 0
+        if (!(signToBoolean.get(sign) ^ assignment[sign * literal - 1])) {
+          // 0, 0 -> 1; 0, 1 -> 0; 1, 1, 0-> 0; 1, 1 -> 1
           // if whatever is inside evaluates to true, then the whole clause is true, so we
           // raise the satisifed flag and skip the rest
           isClauseSatisifed = true;
@@ -43,7 +42,7 @@ class DPLL {
         }
         // now if it evauluates to false on the otherhand, do nothing
       }
-      if (isClauseSatisifed &&unassignedCount == 1) {
+      if (!isClauseSatisifed && unassignedCount == 1) {
         // if we have found exactly one unassignedCount
         foundUnitLiteral = true;
         // now if we have found a unit literal, we must set it to a variable such that

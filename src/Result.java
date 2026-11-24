@@ -6,6 +6,13 @@ class Result{
   Boolean satisfiable;
   Boolean[] assignment;
 
+  Result(){
+  }
+
+  Result(Integer variables){
+    assignment = new Boolean[variables];
+  }
+
   @Override
   public String toString(){
     return "satisifiable: %b\r\nassignment: %s".formatted(

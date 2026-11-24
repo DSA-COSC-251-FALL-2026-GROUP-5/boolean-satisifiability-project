@@ -10,4 +10,4 @@ class Main{
     System.out.println(cnf);
     Result result = BruteForce.sat(cnf);
     System.out.println(result);
-  } }
+  }}

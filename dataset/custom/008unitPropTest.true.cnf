@@ -1,0 +1,6 @@
+c this test tests that first of all, we perform unit prop on literal -1, but afterwards, we also do it for literal 2
+p cnf 3 4
+-1 0
+-1 2 3 0
+1 2 0
+-3 -2 1 0
