@@ -518,3 +518,18 @@ def dpll(expression, assignments):
 
 > [!NOTE]
 > Think about the case when we don't use a particular variable in an expression
+
+# Understanding simplification
+
+So right now, we have implemented 2 simplifications:
+
+- unit propagation
+- pure elimination
+
+But we must understand what it is we're doing when we're performing a "simplification".
+
+When we simplify a expression, we say, ok, if we have expression $E_1$ and we simplified it to expression $E_2$, then this means that $E_1$ is satisifiable if and only if $E_2$ is satisfiable as well?
+
+In that sense, if $E_1$ wasn't satisfiable to begin with, but we simplified it to $E_2$, and we can more quickly evaluate that $E_2$ isn't satisfiable, then we automatically know that $E_1$ wasn't satisifiable.
+
+This means that after simplification, even if our simplification assigned all literals, there might still be the case that we get an unsatisfied assignment?
