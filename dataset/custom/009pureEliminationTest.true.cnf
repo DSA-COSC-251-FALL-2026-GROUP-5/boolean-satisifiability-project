@@ -1,0 +1,12 @@
+c this test is to test pure elimination for the immediate case, and the cascading case
+c so in this instance, we should immediately remove -1
+c after -1 is removed, we see that only cause `2 3 0` and `-2 3 0` remains
+c thus, we can perform another instance of pure elimination on 3
+c note taht if we haven't done pure elimination on -1, 3 wasn't a pure literal at all, it is only pure
+c after we removed -1
+p cnf 3 5
+-1 2 0
+3 -1 0
+2 3 0
+-2 3 0
+-1 -3 0

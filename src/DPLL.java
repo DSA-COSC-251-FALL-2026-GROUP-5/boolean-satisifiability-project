@@ -71,11 +71,28 @@ class DPLL {
     // null if we haven't found it
     //
     // Also, take note that we must skip the clauses that are already satisified
+    Integer[] previousPureLiterals = new Integer[cnf.variables];
     Integer[] pureLiterals = new Integer[cnf.variables];
 
+    // TODO: if the clause is already satsified, then reset the state of what we considered as a pure literal to that the previous unsatisified clause
     for (ArrayList<Integer> clause : cnf.expression) {
+      System.arraycopy(pureLiterals, 0, previousPureLiterals, 0, cnf.variables);
       for (Integer literal : clause) {
         Integer sign = Integer.signum(literal);
+        // so what we consider as a pure literal is that:
+        // - the literal is unassigned
+        // however, if the literal is assigned, and it makes teh clause satisifiable, then we reset the pureLiteral state to that when we haven't seen the clause
+        // if it's assigned to false though, just continue
+        if (assignment[sign*literal - 1] != null){
+          if (!(signToBoolean.get(sign) ^ assignment[sign * literal - 1])){
+            // remember that a xor b answers the question "is the value of a different than the value of b"?
+            // now if they're the same, then our entire clause is satisified, so we reset the pureLiteral to what we had
+            System.arraycopy(previousPureLiterals, 0, pureLiterals, 0, cnf.variables);
+            break;
+          }
+          continue;
+        }
+        // now we know that our literal hasn't been assigned yet
         if (pureLiterals[sign * literal - 1] == null){
           // if this is the first time we have encountered it, store its sign
           pureLiterals[sign * literal - 1] = sign;
@@ -83,7 +100,7 @@ class DPLL {
         };
 
         if (pureLiterals[sign*literal - 1] == -1 && sign == -1){
-          // if it's of negative sign, if it's still of negative sign, we're ok
+          // if it's of negative sign and it's still of negative sign, we're ok
           continue; 
         }
 
@@ -104,6 +121,10 @@ class DPLL {
     // in the form of the pureLiterals array
 
     for (int i = 0; i < pureLiterals.length; i++){
+      if (pureLiterals[i] == null){
+        continue;
+      }
+
       if (pureLiterals[i] == -1){
         // if it contains pure literals of only negation in front, set it to false
         assignment[i] = false;
@@ -116,6 +137,7 @@ class DPLL {
       }
       // otherwise, do nothing
     }
+    // NOTE: it seems like if we encountered 2 pure literals in the same search, we would eliminate them in just this one call
     return hasPureLiteral;
   }
 
@@ -172,6 +194,7 @@ class DPLL {
       undo(assignment, changes); 
       return false;
     }
+    // TODO: add an end early condition when all clauses are satisified, or make sure that we don't perform any really redundant stuff (like, after all clauses are satisfied even though there are still unassigned variables, we hope that even though we still need to assign everything, we immediately terminate on the first branch)
     changes.add(chosenLiteral);
     // now if we still have some unassigned variables left, then we take the chosen literal, assign it a value and see what happens
     assignment[chosenLiteral - 1] = true;
