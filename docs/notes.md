@@ -533,3 +533,36 @@ When we simplify a expression, we say, ok, if we have expression $E_1$ and we si
 In that sense, if $E_1$ wasn't satisfiable to begin with, but we simplified it to $E_2$, and we can more quickly evaluate that $E_2$ isn't satisfiable, then we automatically know that $E_1$ wasn't satisifiable.
 
 This means that after simplification, even if our simplification assigned all literals, there might still be the case that we get an unsatisfied assignment?
+
+# One sample run
+
+| number of variables | time taken |
+| 20 | 0m0.086s|
+| 50 | 0m0.366s|
+| 100 | 0m7.538s|
+|125 | 0m15.783s|
+
+# Sudoku
+
+Sudoku is generated from [this site](https://qqwing.com/generate.html).
+
+# KISSAT
+
+Using this flag:
+
+```
+kissat -q dataset/flat30-60/flat30-10.cnf 
+```
+
+Gives:
+
+```
+s SATISFIABLE
+v -1 -2 3 -4 -5 6 -7 -8 9 -10 -11 12 -13 -14 15 -16 -17 18 -19 -20 21 -22 -23
+v 24 -25 -26 27 -28 -29 30 -31 32 -33 -34 35 -36 -37 38 -39 -40 41 -42 -43 44
+v -45 -46 47 -48 -49 50 -51 -52 53 -54 -55 -56 57 -58 59 -60 61 -62 -63 64 -65
+v -66 67 -68 -69 70 -71 -72 73 -74 -75 76 -77 -78 79 -80 -81 82 -83 -84 -85 86
+v -87 88 -89 -90 0
+```
+
+So we'll need to write a simple parser for this

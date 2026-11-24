@@ -86,4 +86,16 @@ class DIMACS{
     }
     return cnf;
   }
+
+  public static String toDIMACS(CNF cnf){
+    String returnString = "";
+    returnString = returnString.concat(String.format("p cnf %d %d\n", cnf.variables, cnf.clauses));
+    for(ArrayList<Integer> clauses:cnf.expression){
+      for (Integer literal:clauses){
+        returnString = returnString.concat(String.format("%d ", literal));
+      }
+      returnString = returnString.concat("0\n");
+    }
+    return returnString;
+  }
 }
