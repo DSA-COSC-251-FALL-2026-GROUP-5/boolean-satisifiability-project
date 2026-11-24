@@ -1,4 +1,5 @@
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -128,11 +129,13 @@ class DPLL {
       if (pureLiterals[i] == -1){
         // if it contains pure literals of only negation in front, set it to false
         assignment[i] = false;
+        changes.add(i + 1);
         hasPureLiteral = true;
       }
       else if(pureLiterals[i] == 1){
         // same logic applies for the true assignment
         assignment[i] = true;
+        changes.add(i + 1);
         hasPureLiteral = true;
       }
       // otherwise, do nothing
@@ -159,15 +162,13 @@ class DPLL {
   public static Integer pick(Boolean[] assignment){
     // returns the next literal to assign (follows 1st index as in DIMACS CNF)
     // if we return null, then it's all assigned
-    Integer chosenLiteral = null;
     // right now, just pick the first unassigned one we see
     for (int i = 0; i < assignment.length; i++){
       if (assignment[i] == null){
-        chosenLiteral = i;
-        break;
+        return i + 1;
       }
     }
-    return chosenLiteral + 1;
+    return null;
   }
 
   public static void undo(Boolean[] assignment, ArrayList<Integer> changes){
@@ -179,6 +180,7 @@ class DPLL {
   public static boolean dpll(CNF cnf, Boolean[] assignment) {
     // now first of all, we simplify
     ArrayList<Integer> changes = simplify(cnf, assignment);
+    //System.out.printf("simplified: %s\r\n", Arrays.toString(assignment));
     Integer chosenLiteral = pick(assignment);
     if (chosenLiteral == null){
       // if we have assigned all values, then simply evaluate it
@@ -197,22 +199,21 @@ class DPLL {
     // TODO: add an end early condition when all clauses are satisified, or make sure that we don't perform any really redundant stuff (like, after all clauses are satisfied even though there are still unassigned variables, we hope that even though we still need to assign everything, we immediately terminate on the first branch)
     changes.add(chosenLiteral);
     // now if we still have some unassigned variables left, then we take the chosen literal, assign it a value and see what happens
-    assignment[chosenLiteral - 1] = true;
+    assignment[chosenLiteral - 1] = false;
     Boolean leftResult = dpll(cnf, assignment);
     if (leftResult){
       // if it's satisifed, then return true
       return true;
     }
-    // if its false, try again but with a false assignment instead
-    assignment[chosenLiteral - 1] = false;
-    Boolean rightAssignment = dpll(cnf, assignment);
-    if (rightAssignment){
+    // if its false, try again but with a true assignment instead
+    assignment[chosenLiteral - 1] = true;
+    Boolean rightResult = dpll(cnf, assignment);
+    if (rightResult){
       return true;
     }
     // now if both branches are unsatisifiable, then the main branch is unsatisifiable
     // NOTE: notice that when its unsatisifiable, we undo everything so that when the recusrive call returns, the assignment array would look unchanged
     // however, when we do get a satisifying assignment, we don't undo, thus, the assignment array will contain the assignment that makes the formula satisifiable
-    
     undo(assignment, changes);
     return false;
   }
