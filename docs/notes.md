@@ -225,10 +225,30 @@ $$
 
 Which gives you the set of coordinates of a sub-square that the coordinate $(r, c)$ belongs in.
 
-So to encode that each digits in every row and columns should be different:
+We say that for each row, all digits must be assigned.
+
+we do the same for all columns, and for all sub-squares.
+
+For rows:
 
 $$
-\forall r \in R, \forall (i, j) \in C^2, \forall d \in D, (i < j) \land (\neg A_{r, i, d} \lor \neg A_{r, j, d})
+\forall d \in D, \forall r \in R, \exists c \in C, A_{r, c, d}
+$$
+
+For columns:
+
+$$
+\forall d \in D, \forall c \in C, \exists r \in R, A_{r, c, d}
+$$
+
+And do something similar for sub-squares.
+
+We create a new coordinate system for subsquares, call it $(u, v)$.
+
+Let's say that $S(u, v)$ specifies the set of coordinates inside of the subsquare
+
+$$
+\forall d \in D, \forall (u, v) \in U \times V, \exists (r, c) \in S(u, v), A_{r, c, d}
 $$
 
 We do the same for all rows, and then we do the same for all sub-squares using the sub-square constructor $S(u, v)$.

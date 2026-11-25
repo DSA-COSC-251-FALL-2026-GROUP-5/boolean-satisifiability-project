@@ -1,34 +1,38 @@
+import java.lang.reflect.Array;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 class Sudoku{
   // we want to encode sudoku into SAT. Essentially, given a sudoku puzzle (we store it as a one dimensional integer array)
-  Integer getLiteral(Integer row, Integer column, Integer digit){
+  public static Integer getLiteral(Integer row, Integer column, Integer digit){
+    // NOTE: digit is represented 0 to 8
     // given a column, row and digit, we want to get the literal index
     return 9*9*row + 9*column + digit + 1;
   }
 
-  Integer getDigit(Integer literal){
+  public static Integer getDigit(Integer literal){
     // NOTE: digit is represented 0 to 8 rather than 1 to 9
     return (literal - 1) % 9;
   }
 
-  Integer getRow(Integer literal){
+  public static Integer getRow(Integer literal){
     return (literal - 1) / (9*9);
   }
 
-  Integer getColumn(Integer literal){
+  public static Integer getColumn(Integer literal){
     return (literal - getDigit(literal) - 9*9*getRow(literal) - 1) / 9;
   }
 
-  Integer[] satAssignmenttoSolution(Result result){
+  public static Integer[] satAssignmentToSolution(Result result){
     Integer[] solution = new Integer[81];
     // TODO: fill in the blank (interpret the results)
     return solution;
   }
 
 
-  CNF toSat(Integer[] puzzle){
+  public static CNF toSat(Integer[] puzzle){
+    // NOTE: puzzle must be 0 to 8 rather than 1 to 9
     // notice that if the array is stored as left to right, top to bottom, then
     // if n is the index of the array
     // then column j and row i can be accessed by doing n = 9*i + j
@@ -100,58 +104,42 @@ class Sudoku{
       }
     }
 
-    // now we need to state that for every row, there needs to be only one digit occupying it
-    for (int n = 0; n < puzzle.length; n++){
-      for (int i = 0; i < 9; i++){
-        // for every row
-        // for each pair of columns in the row
-        for (int jr = 0; jr < 9; jr++){
-          for (int jl = 0; jl < 9; jl++){
-            // for each digit
-            for (int d = 0; d < 9; d++){
-              // we never want the same digit of the same column to have 2 assignments
-              cnf.expression.add(new ArrayList<>(List.of(
-                -getLiteral(i, jl, d),
-                -getLiteral(i, jr, d)
-              )));
-            }
-          }
+    // now we need to state that for every row, every digit must occupy all columns in the row
+    for (int i = 0; i < 9; i++){
+      for (int d = 0; d < 9; d++){
+        ArrayList<Integer> clause = new ArrayList<>();
+        for (int j = 0; j < 9; j++){
+          clause.add(getLiteral(i, j, d));
         }
+        cnf.expression.add(clause);
       }
     }
 
-    // we do the same for columns
-    for (int n = 0; n < puzzle.length; n++){
-      for (int j = 0; j < 9; j++){
-        // for every row
-        // for each pair of columns in the row
-        for (int ir = 0; ir < 9; ir++){
-          for (int il = 0; il < 9; il++){
-            // for each digit
-            for (int d = 0; d < 9; d++){
-              // we never want the same digit of the same column to have 2 assignments
-              cnf.expression.add(new ArrayList<>(List.of(
-                -getLiteral(il, j, d),
-                -getLiteral(ir, j, d)
-              )));
-            }
-          }
+    // do the same for all columns
+    for (int j = 0; j < 9; j++){
+      for (int d = 0; d < 9; d++){
+        ArrayList<Integer> clause = new ArrayList<>();
+
+        for (int i = 0; i < 9; i++){
+          clause.add(getLiteral(i, j, d));
         }
+        cnf.expression.add(clause);
       }
     }
 
     // we do the same for sub-squares, but first, we must generate the subsquares
     for (int u = 0; u < 3; u++){
       for (int v = 0; v < 3; v++){
-        for (int nr = 0; nr< 9; nr++){
-          for (int nl = 0; nl < nr; nl++){
-            for (int d = 0; d < 9; d++){
-              cnf.expression.add(new ArrayList<>(List.of(
-                -getLiteral(3*u+(nl/9), 3*v+(nl%9), d),
-                -getLiteral(3*u+(nr/9), 3*v+(nr%9), d)
-              )));
+        for (int d = 0; d < 9; d++){
+          ArrayList<Integer> clause = new ArrayList<>();
+          for(int i = 0; i < 3; i++){
+            for (int j = 0; j < 3; j++){
+              clause.add(
+                getLiteral(3*u+i, 3*v+j, d)
+              );
             }
           }
+          cnf.expression.add(clause);
         }
       }
     }
@@ -160,12 +148,39 @@ class Sudoku{
       if (puzzle[n] == null){
         continue;
       }
+      // 9*9*i + 9*j + d
+      // 9*(9*i + j) + d
+      // 9*(n) + d
       // if it isn't null, encode that it must be assigned
-      cnf.expression.add(new ArrayList<>(List.of(n+1)));
+      cnf.expression.add(new ArrayList<>(List.of(9*n + puzzle[n] + 1)));
     }
+
+    cnf.clauses = cnf.expression.size();
     return cnf;
   }
 
+  public static Integer[] puzzleStringToInteger(String stringPuzzle){
+    // NOTE: stringPuzzle is has digtis 1 to 9, while what we return will be 0 to 8
+    // NOTE: not going to deal with error checking for werid use cases
+    Integer[] puzzle = new Integer[stringPuzzle.length()];
+    for (int i = 0; i < stringPuzzle.length(); i++){
+      Character cell = stringPuzzle.charAt(i);
+      if (cell.equals('.')){
+        puzzle[i] = null;
+      }
+      else{
+        // assume that what we have is a digit
+        puzzle[i] = Character.getNumericValue(cell) - 1;
+      }
+    }
+    return puzzle;
+  }
+
   public static void main(String[] args) {
+    String puzzleAsString = "9..8...32.6.2...5....5....1.........2.7.89...15......8..8.7.....7..13...5.69....7";
+    //String solutionAsString = "945861732861237459723594681684752913237189564159346278398475126472613895516928347";
+    System.out.println(puzzleAsString);
+    Integer[] puzzle = puzzleStringToInteger(puzzleAsString);
+    System.out.println(Sudoku.toSat(puzzle));
   }
 }
