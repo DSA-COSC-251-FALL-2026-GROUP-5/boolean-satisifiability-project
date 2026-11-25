@@ -157,32 +157,44 @@ class Sudoku{
     }
 
     // at most one of each digit in every row
-    for (int i = 0; i < 9; i++)
-    for (int d = 0; d < 9; d++)
-    for (int a = 0; a < 9; a++)
-    for (int b = a + 1; b < 9; b++)
-    cnf.expression.add(new ArrayList<>(List.of(
-      -getLiteral(i, a, d),
-      -getLiteral(i, b, d))));
+    for (int i = 0; i < 9; i++){
+      for (int d = 0; d < 9; d++){
+        for (int jr = 0; jr < 9; jr++){
+          for (int jl = 0; jl < jr; jl++)
+          cnf.expression.add(new ArrayList<>(List.of(
+            -getLiteral(i, jl, d),
+            -getLiteral(i, jr, d))));
+        }
+      }
+    }
 
-    // at most one of each digit in every column
-    for (int j = 0; j < 9; j++)
-    for (int d = 0; d < 9; d++)
-    for (int a = 0; a < 9; a++)
-    for (int b = a + 1; b < 9; b++)
-    cnf.expression.add(new ArrayList<>(List.of(
-      -getLiteral(a, j, d),
-      -getLiteral(b, j, d))));
+    // at most one of each digit in every row
+    for (int j = 0; j < 9; j++){
+      for (int d = 0; d < 9; d++){
+        for (int ir = 0; ir < 9; ir++){
+          for (int il = 0; il < ir; il++)
+          cnf.expression.add(new ArrayList<>(List.of(
+            -getLiteral(il, j, d),
+            -getLiteral(ir, j, d))));
+        }
+      }
+    }
 
     // at most one of each digit in every 3x3 box
-    for (int u = 0; u < 3; u++)
-    for (int v = 0; v < 3; v++)
-    for (int d = 0; d < 9; d++)
-    for (int a = 0; a < 9; a++)
-    for (int b = a + 1; b < 9; b++)
-    cnf.expression.add(new ArrayList<>(List.of(
-      -getLiteral(3*u + a/3, 3*v + a%3, d),
-      -getLiteral(3*u + b/3, 3*v + b%3, d))));
+    for (int u = 0; u < 3; u++)  {
+      for (int v = 0; v < 3; v++) {
+        for (int d = 0; d < 9; d++){
+          for (int nr = 0; nr < 9; nr++){
+            for (int nl = 0; nl < nr; nl++){
+              cnf.expression.add(new ArrayList<>(List.of(
+                -getLiteral(3*u + nl/3, 3*v + nl%3, d),
+                -getLiteral(3*u + nr/3, 3*v + nr%3, d))));
+            }
+          }
+        }
+      }
+    }
+
 
     for (int n = 0; n < puzzle.length; n++){
       if (puzzle[n] == null){
@@ -225,13 +237,12 @@ class Sudoku{
   }
 
   public static void main(String[] args) {
-    String puzzleAsString = "9..8...32.6.2...5....5....1.........2.7.89...15......8..8.7.....7..13...5.69....7";
-    //String solutionAsString = "945861732861237459723594681684752913237189564159346278398475126472613895516928347";
+    String puzzleAsString = ".......6.4.18.35..97.5.4.1..9....1...857......1.4.57.....1...........358..3..7...";
     System.out.println(puzzleAsString);
     Integer[] puzzle = puzzleStringToInteger(puzzleAsString);
     CNF sudokuAsSat = Sudoku.toSat(puzzle);
     String sudokuAsDIMACS = DIMACS.toDIMACS(sudokuAsSat);
-    String path = "dataset/sudoku/sudoku001.cnf";
+    String path = "dataset/sudoku/sudoku002.cnf";
     try{
       Files.writeString(Paths.get(path),
         sudokuAsDIMACS

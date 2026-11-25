@@ -1,3 +1,31 @@
+# Usage
+
+TODO: do write the usage
+
+## Building the program
+
+We can build the program by using the `build` executable.
+
+```
+./build
+```
+
+## Running the main program
+
+To run the Main program, we can choose either to run using DPLL or bruteforce
+
+Running using DPLL:
+
+```
+./run Main dpll ./dataset/uf50-218/uf50-01.cnf
+```
+
+Running using bf:
+
+```
+./run Main bf ./dataset/uf20-91/uf20-01.cnf
+```
+
 # Brute force approach
 
 We naively try out every single possible assignment for the boolean expression. Therefore, if we have $n$ variables, we would have to search in the worst case for $2^n$ possible combinations.
@@ -90,7 +118,3 @@ So here's what we have to figure out:
 
 - Expression is stored as a 2d array list
 - Assignment is one array list
-
-# boolean-satisifiability-project
-
-Surface level exploration of the boolean satisifiability problem

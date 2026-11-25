@@ -586,3 +586,7 @@ v -87 88 -89 -90 0
 ```
 
 So we'll need to write a simple parser for this
+
+# Graph visualizer
+
+We'll use [](https://www.fibub.com/science/graph-algorithms/)

@@ -223,7 +223,7 @@ class DPLL {
   public static boolean dpll(CNF cnf, Boolean[] assignment) {
     // now first of all, we simplify
     ArrayList<Integer> changes = simplify(cnf, assignment);
-    System.out.printf("simplified: %s\r\n", Arrays.toString(assignment));
+    //System.out.printf("simplified: %s\r\n", Arrays.toString(assignment));
 
     // detect contradictions early and satisifiability early
     for (ArrayList<Integer> clause: cnf.expression){
