@@ -1,7 +1,11 @@
-import java.lang.reflect.Array;
-import java.util.ArrayList;
+import java.io.IOException;
 import java.util.Arrays;
+import java.util.ArrayList;
 import java.util.List;
+import java.nio.file.Files;
+import java.nio.file.Paths;
+import java.nio.file.StandardOpenOption;
+import java.io.IOException;
 
 class Sudoku{
   // we want to encode sudoku into SAT. Essentially, given a sudoku puzzle (we store it as a one dimensional integer array)
@@ -27,6 +31,14 @@ class Sudoku{
   public static Integer[] satAssignmentToSolution(Result result){
     Integer[] solution = new Integer[81];
     // TODO: fill in the blank (interpret the results)
+    for (int n = 0; n < result.assignment.length; n++){
+      if (!result.assignment[n]){
+        // if we didn't assign it, whatever
+        continue;
+      }
+      // if it did get assigned however,
+      solution[9*getRow(n+1) + getColumn(n+1)] = getDigit(n+1);
+    }
     return solution;
   }
 
@@ -176,11 +188,34 @@ class Sudoku{
     return puzzle;
   }
 
+  public static String puzzleIntegerToString(Integer[] puzzle){
+    String puzzleString = "";
+    for (int i = 0; i < puzzle.length;i++){
+      puzzleString = puzzleString.concat(((Integer)(puzzle[i]+ 1)).toString());
+    }
+    return puzzleString;
+  }
+
   public static void main(String[] args) {
     String puzzleAsString = "9..8...32.6.2...5....5....1.........2.7.89...15......8..8.7.....7..13...5.69....7";
     //String solutionAsString = "945861732861237459723594681684752913237189564159346278398475126472613895516928347";
     System.out.println(puzzleAsString);
     Integer[] puzzle = puzzleStringToInteger(puzzleAsString);
-    System.out.println(Sudoku.toSat(puzzle));
+    CNF sudokuAsSat = Sudoku.toSat(puzzle);
+    String sudokuAsDIMACS = DIMACS.toDIMACS(sudokuAsSat);
+    String path = "dataset/sudoku/sudoku001.cnf";
+    try{
+      Files.writeString(Paths.get(path),
+        sudokuAsDIMACS
+      );
+    }
+    catch (IOException e){
+      e.printStackTrace();
+    }
+    Result result = KISSAT.solve(path);
+    System.out.println(result);
+    Integer[] solvedSudoku = Sudoku.satAssignmentToSolution(result);
+    //System.out.println(Arrays.toString(solvedSudoku));
+    System.out.println(puzzleIntegerToString(solvedSudoku));
   }
 }
