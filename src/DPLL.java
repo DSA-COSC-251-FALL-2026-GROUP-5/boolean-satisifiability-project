@@ -31,6 +31,7 @@ class DPLL {
         }
         // now if it evauluates to false on the otherhand, do nothing
       }
+
       if (!isClauseSatisifed && unassignedCount == 1) {
         // if we have found exactly one unassignedCount
         foundUnitLiteral = true;
@@ -141,21 +142,76 @@ class DPLL {
       // first, we do try to find a new unitLiteral
       performedUnitPropagation = performUnitPropagation(cnf, assignment, changes);
       // now we do pure elimination
-      performedPureElimination = performPureLiteralElimination(cnf, assignment, changes);
+      //performedPureElimination = performPureLiteralElimination(cnf, assignment, changes);
     } while (performedUnitPropagation || performedPureElimination);
     return changes;
   }
 
-  public static Integer pick(Boolean[] assignment){
+
+
+  public static Integer pick(CNF cnf, Boolean[] assignment){
     // returns the next literal to assign (follows 1st index as in DIMACS CNF)
     // if we return null, then it's all assigned
     // right now, just pick the first unassigned one we see
+    /*
     for (int i = 0; i < assignment.length; i++){
       if (assignment[i] == null){
         return i + 1;
       }
     }
     return null;
+    */
+    
+    // we will now use the shortest clause heuristic
+    ArrayList<Integer> shortestClause = null;
+    Integer minUnassignedInClause = null;
+    Integer lastNullLiteral = null;
+    // we will return the lastNullLiteral if we do find an unsatisified clause with null assignments
+
+    for (ArrayList<Integer> clause: cnf.expression){
+      Boolean satisified = false;
+      Integer unassignedInClause = 0;
+      Integer localLastNullLiteral = null;
+      for (Integer literal: clause){
+        Integer sign = Integer.signum(literal);
+
+        if (assignment[sign*literal - 1] == null){
+          localLastNullLiteral = sign*literal;
+          unassignedInClause++;
+          continue;
+        }
+
+        if (Util.evaluateLiteral(literal, assignment)){
+          // no need to evaulate further if it's already satisified
+          satisified = true;
+          break;
+        }
+      }
+
+      if (satisified){
+        continue;
+      }
+
+      // if it isn't satisifed, and the clause has a smaller size, then store it
+      if (shortestClause == null || unassignedInClause < minUnassignedInClause){
+        shortestClause = clause;
+        minUnassignedInClause = unassignedInClause;
+        lastNullLiteral = localLastNullLiteral;
+      }
+    }
+
+    if (lastNullLiteral == null) {
+      // if you can't assign anything, it might be that it's all satisified, however, to make this work with this architecture
+      // we want to return null only if we actually can't assign anymore stuff
+      // so from here, we just assign the first null we see
+      for (int i = 0; i < assignment.length; i++) {
+        if (assignment[i] == null) {
+          return i + 1;
+        }
+      }
+      return null;
+    }
+    return lastNullLiteral;
   }
 
   public static void undo(Boolean[] assignment, ArrayList<Integer> changes){
@@ -168,8 +224,29 @@ class DPLL {
     // now first of all, we simplify
     ArrayList<Integer> changes = simplify(cnf, assignment);
     System.out.printf("simplified: %s\r\n", Arrays.toString(assignment));
-    Integer chosenLiteral = pick(assignment);
+
+    // detect contradictions early and satisifiability early
+    for (ArrayList<Integer> clause: cnf.expression){
+      Boolean allFalse = true;
+      for (Integer literal: clause){
+        Integer sign = Integer.signum(literal);
+        if (assignment[sign*literal - 1] == null || Util.evaluateLiteral(literal, assignment)){
+          allFalse = false;
+          break;
+        }
+      }
+      if (allFalse){
+        // if we're here, then it's all false, thus, the entire branch will be unsatisifiable
+        undo(assignment, changes);
+        return false;
+      }
+    }
+
+
+
+    Integer chosenLiteral = pick(cnf, assignment);
     if (chosenLiteral == null){
+      // if we can't choose a literal, then either it's because the formula is satisfied, or because 
       // if we have assigned all values, then simply evaluate it
       boolean assignmentResult = cnf.expression.stream().allMatch(
         clause -> clause.stream().anyMatch(literal -> Util.evaluateLiteral(literal, assignment)));
@@ -183,17 +260,19 @@ class DPLL {
       undo(assignment, changes); 
       return false;
     }
+
     // TODO: add an end early condition when all clauses are satisified, or make sure that we don't perform any really redundant stuff (like, after all clauses are satisfied even though there are still unassigned variables, we hope that even though we still need to assign everything, we immediately terminate on the first branch)
+    
     changes.add(chosenLiteral);
     // now if we still have some unassigned variables left, then we take the chosen literal, assign it a value and see what happens
-    assignment[chosenLiteral - 1] = false;
+    assignment[chosenLiteral - 1] = true;
     Boolean leftResult = dpll(cnf, assignment);
     if (leftResult){
       // if it's satisifed, then return true
       return true;
     }
     // if its false, try again but with a true assignment instead
-    assignment[chosenLiteral - 1] = true;
+    assignment[chosenLiteral - 1] = false;
     Boolean rightResult = dpll(cnf, assignment);
     if (rightResult){
       return true;

@@ -156,6 +156,34 @@ class Sudoku{
       }
     }
 
+    // at most one of each digit in every row
+    for (int i = 0; i < 9; i++)
+    for (int d = 0; d < 9; d++)
+    for (int a = 0; a < 9; a++)
+    for (int b = a + 1; b < 9; b++)
+    cnf.expression.add(new ArrayList<>(List.of(
+      -getLiteral(i, a, d),
+      -getLiteral(i, b, d))));
+
+    // at most one of each digit in every column
+    for (int j = 0; j < 9; j++)
+    for (int d = 0; d < 9; d++)
+    for (int a = 0; a < 9; a++)
+    for (int b = a + 1; b < 9; b++)
+    cnf.expression.add(new ArrayList<>(List.of(
+      -getLiteral(a, j, d),
+      -getLiteral(b, j, d))));
+
+    // at most one of each digit in every 3x3 box
+    for (int u = 0; u < 3; u++)
+    for (int v = 0; v < 3; v++)
+    for (int d = 0; d < 9; d++)
+    for (int a = 0; a < 9; a++)
+    for (int b = a + 1; b < 9; b++)
+    cnf.expression.add(new ArrayList<>(List.of(
+      -getLiteral(3*u + a/3, 3*v + a%3, d),
+      -getLiteral(3*u + b/3, 3*v + b%3, d))));
+
     for (int n = 0; n < puzzle.length; n++){
       if (puzzle[n] == null){
         continue;
@@ -212,7 +240,8 @@ class Sudoku{
     catch (IOException e){
       e.printStackTrace();
     }
-    Result result = KISSAT.solve(path);
+    //Result result = KISSAT.solve(path);
+    Result result = DPLL.sat(DIMACS.parseFile(path));
     System.out.println(result);
     Integer[] solvedSudoku = Sudoku.satAssignmentToSolution(result);
     //System.out.println(Arrays.toString(solvedSudoku));
