@@ -4,6 +4,7 @@ class CNF{
   public Integer variables;
   public Integer clauses;
   public ArrayList<ArrayList<Integer>> expression;
+
   CNF(){
     expression = new ArrayList<ArrayList<Integer>>();
   }

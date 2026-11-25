@@ -1,19 +1,7 @@
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.HashMap;
-import java.util.Map;
 
 class DPLL {
-  public static HashMap<Integer, Boolean> signToBoolean = new HashMap<Integer, Boolean>(Map.ofEntries(
-      Map.entry(-1, false),
-      Map.entry(1, true)));
-
-  public static boolean evaluateLiteral(int literal, Boolean[] assignment) {
-    if (literal > 0) {
-      return assignment[literal - 1];
-    }
-    return !assignment[-literal - 1];
-  }
 
   public static Boolean performUnitPropagation(CNF cnf, Boolean[] assignment, ArrayList<Integer> changes){
     Boolean foundUnitLiteral = false;
@@ -34,7 +22,7 @@ class DPLL {
         }
 
         // now we know that what we have is assigned
-        if (!(signToBoolean.get(sign) ^ assignment[sign * literal - 1])) {
+        if (!(Util.signToBoolean.get(sign) ^ assignment[sign * literal - 1])) {
           // 0, 0 -> 1; 0, 1 -> 0; 1, 1, 0-> 0; 1, 1 -> 1
           // if whatever is inside evaluates to true, then the whole clause is true, so we
           // raise the satisifed flag and skip the rest
@@ -49,7 +37,7 @@ class DPLL {
         // now if we have found a unit literal, we must set it to a variable such that
         // it's true
         Integer sign = Integer.signum(unassignedLiteral);
-        assignment[sign * unassignedLiteral - 1] = signToBoolean.get(sign);
+        assignment[sign * unassignedLiteral - 1] = Util.signToBoolean.get(sign);
         // changes will always indicate that we assigned a particular value to a
         // previously unassigned variable
         // this is fine because, for changes in dpll, we can undo what we assigned,
@@ -75,7 +63,6 @@ class DPLL {
     Integer[] previousPureLiterals = new Integer[cnf.variables];
     Integer[] pureLiterals = new Integer[cnf.variables];
 
-    // TODO: if the clause is already satsified, then reset the state of what we considered as a pure literal to that the previous unsatisified clause
     for (ArrayList<Integer> clause : cnf.expression) {
       System.arraycopy(pureLiterals, 0, previousPureLiterals, 0, cnf.variables);
       for (Integer literal : clause) {
@@ -85,7 +72,7 @@ class DPLL {
         // however, if the literal is assigned, and it makes teh clause satisifiable, then we reset the pureLiteral state to that when we haven't seen the clause
         // if it's assigned to false though, just continue
         if (assignment[sign*literal - 1] != null){
-          if (!(signToBoolean.get(sign) ^ assignment[sign * literal - 1])){
+          if (!(Util.signToBoolean.get(sign) ^ assignment[sign * literal - 1])){
             // remember that a xor b answers the question "is the value of a different than the value of b"?
             // now if they're the same, then our entire clause is satisified, so we reset the pureLiteral to what we had
             System.arraycopy(previousPureLiterals, 0, pureLiterals, 0, cnf.variables);
@@ -185,7 +172,7 @@ class DPLL {
     if (chosenLiteral == null){
       // if we have assigned all values, then simply evaluate it
       boolean assignmentResult = cnf.expression.stream().allMatch(
-        clause -> clause.stream().anyMatch(literal -> evaluateLiteral(literal, assignment)));
+        clause -> clause.stream().anyMatch(literal -> Util.evaluateLiteral(literal, assignment)));
 
       if (assignmentResult){
         // if it's true, then we have found a satisifying assignment

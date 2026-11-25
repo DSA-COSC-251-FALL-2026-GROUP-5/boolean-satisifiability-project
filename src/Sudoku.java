@@ -156,7 +156,6 @@ class Sudoku{
       }
     }
 
-    // TODO: now encode the non-null stuff as extra constraints
     for (int n = 0; n < puzzle.length; n++){
       if (puzzle[n] == null){
         continue;
@@ -165,5 +164,8 @@ class Sudoku{
       cnf.expression.add(new ArrayList<>(List.of(n+1)));
     }
     return cnf;
+  }
+
+  public static void main(String[] args) {
   }
 }

@@ -1,14 +1,6 @@
 import java.util.Arrays;
-import java.util.ArrayList;
 
 class BruteForce {
-  public static boolean evaluateLiteral(int literal, Boolean[] assignment) {
-    if (literal > 0) {
-      return assignment[literal - 1];
-    }
-    return !assignment[-literal - 1];
-  }
-
   public static Boolean[] getNextAssignment(Boolean[] previousAssignment) {
     int i = 0;
     boolean rollover = true;
@@ -33,7 +25,7 @@ class BruteForce {
     Arrays.fill(result.assignment, false);
     do {
       boolean assignmentResult = cnf.expression.stream().allMatch(
-          clause -> clause.stream().anyMatch(literal -> evaluateLiteral(literal, result.assignment)));
+          clause -> clause.stream().anyMatch(literal -> Util.evaluateLiteral(literal, result.assignment)));
       if (assignmentResult) {
         // if for that particular assignment, we got a true, then it's satisfiable and
         // we can end there
