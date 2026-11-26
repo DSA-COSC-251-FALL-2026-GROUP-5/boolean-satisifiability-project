@@ -1,419 +1,336 @@
-#import "@preview/ilm:2.1.1": *
+#import "@preview/fyrst-ru-labreport:0.1.0":*
+#import "@preview/unify:0.7.0":*
+#import "@preview/note-me:0.6.0": *
+#import "@preview/tdtr:0.6.1" : *
 
-#set text(lang: "en")
-
-#show: ilm.with(
-  title: [The Beauty of\ Sharing Knowledge],
-  authors: "Max Mustermann",
-  date: datetime(year: 2024, month: 03, day: 19),
-  abstract: [
-    'Ilm (Urdu: #text(lang: "ur", font: ("Noto Nastaliq Urdu", "Noto Naskh Arabic"), size: 0.8em)[عِلْم]) is the Urdu term for knowledge. In its general usage, 'ilm may refer to _knowledge_ of any specific thing or any form of _learning_. Subsequently, the term is also used to refer to various categories of sciences, especially when used in its plural form ('ulum).
-  ],
-  preface: [
-    #align(center + horizon)[
-      Thank you for using this template #emoji.heart \
-      I hope you like it #emoji.face.smile
-    ]
-  ],
-  bibliography: bibliography("refs.bib"),
-  figure-index: (enabled: true),
-  table-index: (enabled: true),
-  listing-index: (enabled: true),
-)
-
-= Layout
-The template uses `A4` as its page size, you can specify a different #link("https://typst.app/docs/reference/layout/page#parameters-paper")[paper size string] using:
-
-```typst
-#show: ilm.with(
-  paper-size: "us-letter",
-)
-```
-
-'Ilm display's its content in the following order:
-+ Cover page (unless disabled)
-+ Preface page (if defined)
-+ Table of contents (unless disabled)
-+ Body (your main content)
-+ Appendix (if defined)
-+ Bibliography (if defined)
-+ Indices (if enabled) --- index of figures (images), tables, or listings (code blocks)
-
-== Cover
-By default, 'Ilm generates a cover/title page with a title, author(s), date, and abstract:
-
-```typst
-#show: ilm.with(
-  title: [Your Title],
-  authors: "Author Name",
-  abstract: [Your content goes here],
-)
-```
-
-Only the `title` and `authors` fields are necessary; `date` (default: `datetime.today()`) and `abstract` are optional.
-
-=== Multiple authors
-You can specify multiple authors by providing an array. Authors will be displayed on separate lines on the cover page, with font size automatically adjusted based on the number of authors:
-
-```typst
-#show: ilm.with(
-  title: [Your Title],
-  authors: ("John Doe", "Jane Smith", "Max Mustermann"),
-)
-```
-
-The `authors` parameter accepts either a string (single author) or an array of strings (multiple authors).
-
-=== Date format
-
-By default, the date is shown in the format: `MMMM DD, YYYY`. You can change the date format by specifying a different format string:
-
-```typst
-#show: ilm.with(
-  date-format: "[month repr:long] [day padding:zero], [year repr:full]",
-)
-```
-
-See Typst's #link("https://typst.app/docs/reference/foundations/datetime/#format")[official documentation] for more info on how date format strings are defined.
-
-=== Customizing the cover page
-You have full control over the cover page behavior:
-
-*No cover page:*
-```typst
-#show: ilm.with(
-  cover-page: none,
-)
-```
-
-*Custom cover page:*
-```typst
-#show: ilm.with(
-  cover-page: [
-    #align(center + horizon)[
-      #text(4em)[*My Custom Title*]
-      #v(2em)
-      #text(2em)[Subtitle]
-      #v(1em)
-      #text(1.2em)[Author Name]
-    ]
-  ],
-)
-```
-
-When you provide custom content, 'Ilm will automatically wrap it in a `page()` for you. The `title`, `authors`, `date`, and `abstract` parameters are still used for document metadata even when a custom cover page is provided.
-
-#emoji.fire Tip: if your custom cover page is complex, define it in a separate file and import it:
-
-```typst
-#show: ilm.with(
-  cover-page: [#include "custom-cover.typ"],
-)
-```
-
-== Preface
-The preface content is shown on its own separate page after the cover page.
-
-You can define it using:
-
-```typst
-#show: ilm.with(
-  preface: [
-    = Preface Heading
-    Your content goes here.
-  ],
-)
-```
-
-#emoji.fire Tip: if your preface is quite long then you can define it in a separate file and import it in the template definition like so:
-
-```typst
-#show: ilm.with(
-  // Assuming your file is called `preface.typ` and is
-  // located in the same directory as your main Typst file.
-  preface: [#include "preface.typ"],
-)
-```
-
-== Table of Contents
-By default, 'Ilm display a table of contents before the body (your main content). You can disable this behavior using:
-
-```typst
-#show: ilm.with(
-  table-of-contents: none,
-)
-```
-
-The `table-of-contents` option accepts the result of a call to the `outline()` function, so if you want to customize the behavior of table of contents then you can specify a custom `outline()` function:
-
-```typst
-#show: ilm.with(
-  table-of-contents: outline(title: "custom title"),
-)
-```
-
-See Typst's #link("https://typst.app/docs/reference/model/outline/")[official documentation] for more information.
-
-== Body
-By default, the template will insert a #link("https://typst.app/docs/reference/layout/pagebreak/")[pagebreak] before each chapter, i.e. first-level heading. You can disable this behavior using:
-
-```typst
-#show: ilm.with(
-  chapter-pagebreak: false,
-)
-```
-
-== Appendices
-The template can display different appendix, if you enable and define it:
-
-```typst
-#show: ilm.with(
-  appendix: (
-    enabled: true,
-    title: "Appendix", // optional
-    heading-numbering-format: "A.1.1.", // optional
-    body: [
-      = First Appendix
-      = Second Appendix
-    ],
+#show: project.with(
+  title: [Boolean Satisfiability (SAT)],
+  course-name: [Data Structures],
+  course-abrev: [COSC 251 - 001],
+  organization: [Group 5],
+  logo:image("assets/aupp_logo.png",width:70%),
+  authors:(
+    (
+      name:"Kimchour LUY",
+      email:"2025136luy@aupp.edu.kh",
+      phone:none
+    ),
+    (
+      name:"Soksovan HENG",
+      email:"2025427heng@aupp.edu.kh",
+      phone:none
+    ),
+    (
+      name:"Singyang HOEURNG",
+      email:"2025138hoeurng@aupp.edu.kh",
+      phone:none
+    ),
+    (
+      name:"Monymatin MOENG",
+      email:"2025385moeng@aupp.edu.kh",
+      phone:none
+    ),
+    (
+      name:"Sophapor HENG",
+      email:"2025530heng@aupp.edu.kh",
+      phone:none
+    )
   ),
-)
-```
-
-The `title` and `heading-numbering-format` options can be omitted as they are optional and will default to predefined values.
-
-#emoji.fire Tip: if your appendix is quite long then you can define it in a separate file and import it in the template definition like so:
-
-```typst
-#show: ilm.with(
-  appendix: (
-    enabled: true,
-    // Assuming your file is called `appendix.typ` and is
-    // located in the same directory as your main Typst file.
-    body: [#include "appendix.typ"],
+  author-columns:3,
+  supervisors:(
+    (
+      name:"Visethboti Sin",
+      title:none,
+      email:"v.sin@aupp.edu.kh",
+      phone:none
+    ),
   ),
-)
-```
-
-== Bibliography
-If your document contains references and you want to display a bibliography/reference listing at the end of the document but before the indices then you can do so by defining `bibliography` option:
-
-```typst
-#show: ilm.with(
-  // Assuming your file is called `refs.bib` and is
-  // located in the same directory as your main Typst file.
-  bibliography: bibliography("refs.bib"),
-)
-```
-
-The `bibliography` option accepts the result of a call to the `bibliography()` function, so if you want to customize the behavior of table of contents then you can do so by customizing the `bibliography()` function that you specify here. See Typst's #link("https://typst.app/docs/reference/model/bibliography/")[official documentation] for more information.
-
-== Indices
-The template also displays an index of figures (images), tables, and listings (code blocks) at the end of the document, if you enable them:
-
-```typst
-#show: ilm.with(
-  figure-index: (
-    enabled: true,
-    title: "Index of Figures" // optional
-  ),
-  table-index: (
-    enabled: true,
-    title: "Index of Tables" // optional
-  ),
-  listing-index: (
-    enabled: true,
-    title: "Index of Listings" // optional
-  ),
-)
-```
-
-The `title` option can be omitted as it is optional and will default to predefined values.
-
-== Footer
-By default, 'Ilm displays page numbers in the footer with alternating alignment (left on even pages, right on odd pages). If a page does not begin with a chapter, the chapter's name is shown alongside the page number.
-
-Look at the page numbering for the current page. It should show "#upper[Layout]" next to the page number because the current subheading _Footer_ is part of the _Layout_ chapter.
-
-When we say chapter, we mean the the first-level or top-level heading which is defined using a single equals sign (`=`).
-
-=== Customizing page numbering
-You can customize the page numbering style in footer or disable it entirely:
-
-*Disable page numbering:*
-```typst
-#show: ilm.with(
-  footer: none,
-)
-```
-
-*Different styles:*
-```typst
-// Alternating sides with chapter name (default)
-#show: ilm.with(
-  footer: "page-number-alternate-with-chapter",
+  supervisors-columns:2,
+  bibliography:bibliography("bibliography.bib", style: "apa", title: "References"),
+  paper-size:"a4",
+  lang:"en",
 )
 
-// Left-aligned with chapter name
-#show: ilm.with(
-  footer: "page-number-left-with-chapter",
-)
+#set text(size:10pt)
+#set heading(numbering: "1.1.1.")
 
-// Right-aligned with chapter name
-#show: ilm.with(
-  footer: "page-number-right-with-chapter",
-)
+= Problem
 
-// Centered page number only (no chapter name)
-#show: ilm.with(
-  footer: "page-number-center",
-)
+== Problem Definition
 
-// Left-aligned page number only (no chapter name)
-#show: ilm.with(
-  footer: "page-number-left",
-)
+The boolean satisfiability (SAT) problem asks whether a boolean function have any assignments which makes the boolean function evaluate to true. 
 
-// Right-aligned page number only (no chapter name)
-#show: ilm.with(
-  footer: "page-number-right",
-)
-```
+When a particular input makes the boolean function evaluate to true, we say that the input "satisfies" the boolean function. Using our new jargon, the boolean satisfiability problem asks whether a boolean function is "satisfiable", that is, if there even exists an input that makes the boolean function evaluates to true.
 
-= Text
-Typst defaults to English for the language of the text. If you are writing in a different language then you need to define you language before the 'Ilm template is loaded, i.e. before the `#show: ilm.with()` like so:
+More formally, we can state the SAT problem as such:
 
-```typst
-#set text(lang: "de")
-#show: ilm.with(
-  // 'Ilm's options defined here.
-)
-```
+We first define the boolean set
 
-By defining the language before the template is loaded, 'Ilm will set title for bibliography and table of contents as per your language settings as long as you haven't customized it already.
+$
+bb(B) = {0, 1}
+$
 
-== External links
-'Ilm adds a small maroon circle to external (outgoing) links #link("https://github.com/talal/ilm")[like so].
+We now define a boolean function $f: bb(B)^n -> bb(B)$ which consists of only the compositions of the conjunction operator ($and$), disjunction operator ($or$), and negation operator ($not$).
 
-This acts as a hint for the reader so that they know that a specific text is a hyperlink. This is far better than #underline[underlining a hyperlink] or making it a #text(fill: blue)[different color]. Don't you agree?
+The SAT problem then asks:
 
-If you want to disable this behavior then you can do so by setting the concerning option to `false`:
+$
+exists bold(x) in bb(B)^n "such that" f(bold(x)) = 1
+$
 
-```typst
-#show: ilm.with(
-  external-link-circle: false,
-)
-```
+If this evaluates to true, then we say that the boolean function $f$ is satisfiable. Otherwise, we say that it isn't satisfiable.
 
-== Blockquotes
-'Ilm also exports a `blockquote` function which can be used to create blockquotes. The function has one argument: `body` of the type content and can be used like so:
+=== Examples
 
-```typst
-#blockquote[
-  A wizard is never late, Frodo Baggins. Nor is he early. He arrives precisely when he means to.
-  --- Gandalf
-]
-```
+Suppose that we have:
 
-The above code will render the following:
+$
+f(x_1, x_2, x_3) = (x_1 or x_2 or x_3) and (not x_1 or not x_2 or not x_3)
+$
 
-#blockquote[
-  A wizard is never late, Frodo Baggins. Nor is he early. He arrives precisely when he means to.
-  --- Gandalf
+Notice that when we evaluate $f(0, 1, 0)$:
+
+$
+f(0, 1, 0) = (0 or 1 or 0) and (1 or 0 or 1) = 1 and 1 = 1
+$
+
+Thus, we say that $f$ is satisfiable, and we say that the assignment $x_1 = 0$, $x_2 = 1$, $x_3 = 0$ "satisfies" our boolean function (or constraints).
+
+Now suppose we have:
+
+$
+g(x_1) = x_1 and not x_1
+$
+
+Is this satisfiable? Well consider all possible assignments:
+
+- if $x_1 = 0$, then $g(0) = 0 and 1 = 0$
+- if $x_1 = 1$, then $g(1) = 1 and 0 = 0$
+
+Thus, since we have exhausted our inputs, and none of them cause $g(x_1) = 1$, then we say that the boolean function is unsatisfiable.
+
+== Computational Complexity
+
+The SAT problem was the first problem proven to be NP-Complete by the Cook-Levin theorem @cook1971complexity.
+
+== Motivation and Applications
+
+The reason why we're interested in the SAT problem is because it can be stated as the most generic NP-Complete problem. And since every problem in NP-complete can be converted from one to another#footnote[A problem is NP-hard if all problems in NP can be reduced into it. A problem is NP-Complete if it is both in NP and in NP-hard. Thus, a consequence of the definition of NP-Completeness is that for every pair of problems that are NP-complete, they can all be reduced to one another.], if we can solve SAT efficiently, and we can convert other problems into SAT in polynomial time as well, then we would be able to solve the problem we started with relatively efficiently.
+
+In that sense, a SAT solver could act as a generic black box solver for many different NP-complete problems. Once you have figured out a way to solve SAT relatively efficiently, we could then reuse the same machinery to solve other NP-complete problems without having to write specific algorithms that particular NP-complete problem. And if the SAT solver is really efficient, converting an NP-complete problem into SAT and letting the efficient SAT solver solve it might be one of the more optimal ways to get a solution to your problem quickly.
+
+We will give 3 examples of problems that can be expressed in SAT
+
+=== Verifying Equivalent Boolean Functions
+
+Suppose that we have a boolean function $f:bb(B)^n -> bb(B)$ and another boolean function $g:bb(B)^n -> bb(B)$.
+
+And practically, we imagine that the function $f$ is very lengthy with many operations, while $g$ is a lot simpler.
+
+We might want to ask, is $f(bold(x)) equiv g(bold(x))$?
+
+Why might we care about this? Because if they are indeed equivalent, then it would make more practical sense to use the function $g(bold(x))$.
+
+This is useful because, some components of computers do use combinational logic (such as the ALU), which can then be expressed as a boolean function. As such, if we used a simpler boolean function $g$ that can do the same job as the more complicated function $f$, we would not only save cost (by requiring less logic gates), we would also perhaps make the function faster to evaluate as well.
+
+To express this problem into SAT. We can ask the problem in a slightly different manner: does there exist a value $bold(x) in bb(B)^n$ which makes $f(bold(x)) != g(bold(x))$? If the answer is no, then we can say that they're equivalent. Notice that asking whether $f(bold(x)) != g(bold(x))?$ is the same as asking $f(bold(x)) xor g(bold(x))$.
+
+This means that to determine whether $f(bold(x)) equiv g(bold(x))$, we ask:
+
+$
+not exists bold(x) in bb(B)^n "such that" f(bold(x)) xor g(bold(x)) = 1
+$
+
+=== K Coloring
+
+The K-Coloring problem ask that given a set of vertices $V$, a set of edges $E$, and a set of colors $C$, we want to construct a coloring function $c: V -> C$ with the constraint that $forall (v_1, v_2) in E, c(v_1) != c(v_2)$.
+
+This problem can be encoded into SAT using boolean variables:
+
+$
+x_(v, c) "for" v in V, c in C
+$
+
+Which can be interpreted by saying $x_(v, c) = 1$ when we color vertex $v$ with color $c$. Our final boolean function $f: bb(B)^(|V|dot|C|) -> bb(B)$ is then interpreted as "when $f$ evaluates to true, this particular assignment of colors to vertices satisfies all of our constraint".
+
+Our constraint $f(bold(x))$ is the conjunction of these sub-constraints:
+
+- for every vertex, we must assign exactly one color. This can be broken down as 2 conditions that must hold together:
+  - for every vertex, at least one color must be assigned. $forall v in V, exists c in C x_(v, c)$
+  - for every vertex, at most one color must be assigned. $forall v in V, and.big_(c_l, c_r in C and (c_l < c_r)) (not x_(v,c_l) or not x_(v, c_r))$
+- for every edge, a color must never be assigned to both vertices belonging to an edge. $forall (v_1, v_2) in E, forall c in C, not x_(v_1, c) or not x_(v_2, c)$
+
+#note[
+  A universal quantifier $forall z in Z, f(z)$ can be expanded as $and.big_(z in Z) f(z)$.
+
+  Similarly, an existential quantifier $exists z in Z, f(z)$ can be expanded as $or.big_(z in Z) f(z)$.
 ]
 
-== Small- and all caps
-'Ilm also exports functions for styling text in small caps and uppercase, namely: `smallcaps` and `upper` respectively.
+=== Sudoku
 
-These functions will overwrite the standard #link("https://typst.app/docs/reference/text/smallcaps/")[`smallcaps`] and #link("https://typst.app/docs/reference/text/upper/")[`upper`] functions that Typst itself provides. This behavior is intentional as the functions that 'Ilm exports fit in better with the rest of the template's styling.
+For sudoku, we have a set of digits $D$, a set of columns $C$, and a set of rows $R$. Similar to the K-Coloring problem, We define boolean variables:
 
-Here is how Typst's own #std-smallcaps[smallcaps] and #std-upper[upper] look compared to the 'Ilm ones:\
-#hide[Here is how Typst's own ] #smallcaps[smallcaps] and #upper[upper]
+$
+x_(r, c, d) forall r in R, forall c in C, forall d in D
+$
 
-They both look similar, the only difference being that 'Ilm uses more spacing between individual characters.
+Our constraints as a boolean function $f(bold(x))$ is the conjunction of the following constraint:
 
-If you prefer Typst's default spacing then you can still use it by prefixing `std-` to the functions:
+- for every cell, we must assign exactly one digit. This can similarly be broken down into the conjunction of 2 constraints:
+  - for every cell, at least one digit must be assigned. $forall r in R, forall c in C, exists d in D x_(r, c, d)$
+  - for every cell, at most one digit must be assigned. $forall r in R, forall c in C, and.big_(d_l, d_r in D and (d_l < d_r)) (not x_(r,c,d_l) or not x_(r,c,d_r))$
+- every digit must be assigned at least once in every row. $forall r in R, forall d in D, exists c in C x_(r, c, d)$
+- every digit must be assigned at least once in every column. $forall c in C, forall d in D, exists r in R x_(r, c, d)$
+- every digit must appear at least once in every sub-square. Suppose that I have the set of sub-square $S$ which contains sets of coordinates of a particular sub-square. $forall s in S, forall d in D, exists (r, c) in s, x_(r, c, d)$
 
-```typst
-#std-smallcaps[your content here]
-#std-upper[your content here]
-```
+Now this is in fact a completely valid encoding of sudoku, however, this program won't complete in time for the DPLL algorithm without these particular redundant constraint:
 
-== Tables
-In order to increase the focus on table content, we minimize the table's borders by using thin gray lines instead of thick black ones. Additionally, we use small caps for the header row. Take a look at the table below:
+- every digit must be assigned at most once in every row. $forall r in R, forall d in D, and.big_(c_l, c_r in C and c_l < c_r) not x_(r, c_l, d) or not x_(r, c_r, d)$
+- every digit must be assigned at most once in every column. $forall c in C, forall d in D, and.big_(r_l, r_r in R and r_l < r_r) not x_(r, r_l, d) or not x_(r, r_r, d)$
+- every digit must be assigned at most once in every sub-square. $forall s in S, forall d in D, and.big_((r_1, c_1), (r_2, c_2) in s and (r_1, c_1) < (r_2, c_2)) not x_(r_1, c_1, d) or not x_(r_2, c_2, d)$
 
-#let unit(u) = math.display(math.upright(u))
-#let si-table = table(
-  columns: 3,
-  table.header[Quantity][Symbol][Unit],
-  [length], [$l$], [#unit("m")],
-  [mass], [$m$], [#unit("kg")],
-  [time], [$t$], [#unit("s")],
-  [electric current], [$I$], [#unit("A")],
-  [temperature], [$T$], [#unit("K")],
-  [amount of substance], [$n$], [#unit("mol")],
-  [luminous intensity], [$I_v$], [#unit("cd")],
-)
 
-#figure(caption: ['Ilm's styling], si-table)
+== Difficulty of Problem <difficulty-of-problem>
 
-For comparison, this is how the same table would look with Typst's default styling:
+The difficulty of the problem is that the naive approach to answering this problem requires that you check all possible assignments $forall x in bb(B)^n$ for a boolean function with $n$ variables. Since $|bb(B)| = 2$, this means: $|bb(B)^n| = 2^n$. If it takes $O(l)$ time to evaluate a boolean function with $l$ number of literals, then the worst case time complexity would be $O(l dot 2^n)$.
 
-#[
-  #set table(inset: 5pt, stroke: 1pt + black)
-  #show table.cell.where(y: 0): it => {
-    v(0.5em)
-    h(0.5em) + it.body.text + h(0.5em)
-    v(0.5em)
-  }
-  #figure(caption: [Typst's default styling], si-table)
-]
+In terms time complexity, it is extremely hard to improve it. This was known as the Exponential Time Hypothesis (ETH), which stated that 3-SAT (SAT written in conjunctive normal form with 3 literal clauses) cannot be solved in sub-exponential time (that is, in terms of theoretical time complexity, it doesn't get significantly better than the naive approach). It seems however that recently, OpenAI has claimed to have shown that ETH is false, by formulating an alternate algorithm for 3-SAT that has a sub-exponential time complexity @exponentialTimeHypothesis2026. Nonetheless, the proof must still be validated and checked further by experts.
 
-= Code
-== Custom font and size
-'Ilm uses the Iosevka @wikipedia_iosevka font for raw text instead of the default DejaVu Sans Mono. If Iosevka is not available then the template will fall back to DejaVu Sans Mono.
+= Solution
 
-#[
-  #let snip(cap) = figure(caption: cap)[
-    ```rust
-    fn main() {
-        let user = ("Adrian", 38);
-        println!("User {} is {} years old", user.0, user.1);
+For our algorithm, we compared 2 approaches:
 
-        // tuples within tuples
-        let employee = (("Adrian", 38), "die Mobiliar");
-        println!("User {} is {} years old and works for {}", employee.0.1, employee.0.1, employee.1);
-    }
-    ```
+1. the brute force approach
+2. the Davis-Putnam-Logemann-Loveland (DPLL) algorithm @davis1962machine
+
+== Brute Force Approach
+
+Suppose we have a boolean function $f:bb(B)^n -> bb(B)$, and we have an input $bold(x) in bb(B)^n$.
+
+- We simply first set $bold(x) = (0, 0, ..., 0, 0)$, and then evaluate $f(bold(x))$
+- if $f(bold(x)) == 1$, then it's satisfiable, otherwise, check for $bold(x) = (0, 0, ..., 0, 1)$
+- and so on...
+- after we have checked $bold(x) = (1, 1, ..., 1, 1)$, and the formula still isn't true, then our boolean formula is not satisfiable.
+
+Essentially, we can treat $bold(x)$ as a binary number, and we just increment that number by one until we reach $1111...1111_2$.
+
+== DPLL
+
+First of all, DPLL requires that we represent our boolean function in conjunctive normal form (CNF). If the conjunction operator is analogous to multiplication operator, and the disjunction operator is analogous to the addition operator, then the CNF is analogous to the product of sums form.
+
+An example of a CNF formula:
+
+$
+(a or b or c) and (c or d or not e) and (f or g or h)
+$
+
+The DPLL algorithm is an algorithm that does depth first search on the "assignment tree".
+
+#align(center)[
+  #tidy-tree-graph(
+    compact: true,
+    spacing: (20pt, 20pt),
+    node-inset: 4pt
+  )[
+    - Start
+      - $x_1 = 0$
+        - $x_2 = 0$
+          - $x_3 = 0$
+          - $x_3 = 1$
+        - $x_2 = 1$
+          - $x_3 = 0$
+          - $x_3 = 1$
+      - $x_1 = 1$
+        - $x_2 = 0$
+          - $x_3 = 0$
+          - $x_3 = 1$
+        - $x_2 = 1$
+          - $x_3 = 0$
+          - $x_3 = 1$
   ]
-
-  #show raw: set text(font: "DejaVu Sans Mono")
-  For comparison, here is what `code` in DejaVu Sans Mono looks like:
-  #snip("Code snippet typeset in DejaVu Sans Mono font")
-
-  #show raw: set text(font: ("Iosevka", "DejaVu Sans Mono"))
-  and here is how the same `code` looks in Iosevka:
-  #snip("Code snippet typeset in Iosevka font")
 ]
 
-In the case that both code snippets look identical then it means that Iosevka is not installed on your computer.
+However, what's special is that it uses mechanisms like:
 
-You can use Typst's default raw text formatting by setting the `raw-text` option to a special string:
+- unit-propagation
+- pure literal elimination
 
-```typst
-#show: ilm.with(
-  raw-text: "use-typst-default",
-)
-```
+Which is capable of removing entire branches, thus, reducing our search space significantly. 
 
-Alternatively, you can specify your own custom font and size using a dictionary:
+=== Unit Propagation
 
-```typst
-#show: ilm.with(
-  raw-text: (
-    // font takes a list of fonts in order of priority.
-    font: ("JetBrains Mono", "Cascadia Mono"),
-    size: 10pt,
+Unit propagation relies on the fact that when we have a unit clause (a clause with only one unassigned literal), we can discard one of the branches because it is automatically unsatisfiable.
+
+For example, if we have $f(x_1, x_2, x_3) = x_1 and (x_2 or x_3)$, 
+
+We can see that for the branch $x_1 = 0$, regardless of what values $x_2$ and $x_3$ are, the whole formula will always be false.
+
+Thus, our search tree gets reduced to:
+
+#align(center)[
+  #tidy-tree-graph(
+    compact: true,
+    spacing: (20pt, 20pt),
+    node-inset: 4pt
+  )[
+    - Start
+      - $x_1 = 1$
+        - $x_2 = 0$
+          - $x_3 = 0$
+          - $x_3 = 1$
+        - $x_2 = 1$
+          - $x_3 = 0$
+          - $x_3 = 1$
+  ]
+]
+
+As such, whenever we can perform unit propagation, we reduce the amount of leaves we need to check by a half. If we get lucky and can perform many instances of unit-propagation, it may allow us to solve SAT instances of many more variables compared to the brute force approach.
+
+• How the algorithm works.
+• Important steps or operations.
+• Time complexity analysis.
+• Advantages and limitations.
+• Whether the solution is exact, approximate, or heuristic.
+
+= Implementation
+
+Describe how your group implemented the algorithm.
+Include:
+
+• Programming language used.
+• Important components of the program.
+• Data structures used.
+• How to run and use the program.
+
+= Findings
+
+Present the results of your implementation and testing.
+Include:
+• Test cases and results.
+• Execution time for different input sizes.
+• Observations about algorithm performance.
+• Solution quality, where applicable.
+• Limitations and challenges encountered.
+• Conclusions from your findings.
+You may include diagrams, pseudocode, screenshots, tables, graphs, or other supporting materi-
+als.
+All external sources, algorithms, diagrams, and references must be properly cited.
+
+#figure(
+  table(
+    align: (left,)*2 + (right,),
+    columns: 3,
+    table.hline(),
+    table.cell(colspan: 2, align(center)[Item]),[],
+    table.hline(end:2),
+    [Animal]    , [Description] , [Weight (#unit("g"))] ,
+    [Gnat     ] , [per gram]    , [#qty("13.65", "g")]      ,
+    [         ] , [each    ]    , [#qty("0.01" , "g")]       , 
+    [Gnu      ] , [stuffed ]    , [#qty("92.50", "g")]      ,
+    [Emu      ] , [stuffed ]    , [#qty("33.33", "g")]      ,
+    [Armadillo] , [frozen  ]    , [#qty("8.99" , "g")]       ,
+    table.hline(),
   ),
-)
-```
+  caption: [Results of measuring different types of frozen perishables.
+    The description tells how each item is prepared.]
+)<tab:data>

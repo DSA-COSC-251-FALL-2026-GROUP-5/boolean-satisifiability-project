@@ -212,7 +212,7 @@ We now impose the following constraints:
   - for every $(r, c) \in R \times C$, we want at most one of the $A_{r, c, d}$ to be true, that is, for every unordered pair $(i, j) \in D^2$ (need to constraint that they're not identical, and doesn't care about order), we never want both of them to be true, that is:
 
   $$
-  \forall (r, c) \in R \times C, \forall (i, j) \in D^2, (i < j) \land (\neg A_{r, c, i} \lor \neg A_{r, c, j})
+  \forall (r, c) \in R \times C, \forall (i, j) \in D^2, (i < j) \implies (\neg A_{r, c, i} \lor \neg A_{r, c, j})
   $$
 
 - now that we assign uniquely only one digit per $(r, c)$, we now need to constraint that fact that, for every row, they need to be unique, for every column, they need to be unique, and also unique for the sub-square.
