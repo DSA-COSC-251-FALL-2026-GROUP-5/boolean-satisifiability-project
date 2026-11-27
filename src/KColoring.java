@@ -174,7 +174,7 @@ class KColoring {
 
   public static void main(String[] args) {
     Graph graph = KColoring.parseGraph("dataset/cambodia.txt");
-    String[] myColors = { "R", "G", "B", "Y" };
+    String[] myColors = { "R", "G", "B"};
     KColoring kcoloring = new KColoring(myColors, graph);
     CNF cnf = kcoloring.toSat();
     /*
@@ -189,10 +189,13 @@ class KColoring {
      * }
      * Result result = KISSAT.solve(cnfPath);
      */
+    long startTime = System.nanoTime();
     Result result = DPLL.sat(cnf);
+    long endTime = System.nanoTime();
+    System.out.printf("time taken: %d\r\n", endTime - startTime);
+    System.out.println(result);
     // System.out.println(kcoloring.satAssignmentToSolution(result));
-    // System.out.println(result);
-    Graph coloredGraph = kcoloring.satAssignmentToSolution(result);
-    System.out.println(coloredGraph.asFileContent());
+    //Graph coloredGraph = kcoloring.satAssignmentToSolution(result);
+    //System.out.println(coloredGraph.asFileContent());
   }
 }

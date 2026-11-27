@@ -54,6 +54,10 @@
 #set text(size:10pt)
 #set heading(numbering: "1.1.1.")
 
+#set page(footer: context [
+    #counter(page).display("1")]
+  )
+
 = Problem
 
 == Problem Definition
@@ -349,6 +353,13 @@ For the forward direction we first assume that $f(bold(y), x_i) "is satisfiable"
 
 For the reverse direction, we assume that $f_0(bold(y))$ is satisfiable. Now when we choose $x_i = 1$, it automatically makes $f_1(bold(y), x_i) = x_i or g(bold(y)) = 1$. This makes $f_1(bold(y), x_i)$ satisfiable. Because both $f_0(bold(y))$ and $f_1(bold(y), x_i)$ is satisfiable, putting the two pieces together gives you $f_0(bold(y)) and f_1(bold(y), x_i) = f(bold(y), x_i)$ is satisfiable $qed$.
 
+=== Other heuristics
+
+There are other heuristics we implemented to improve the performance of the algorithm, such as:
+
+- contradiction detection: when we detect that a clause is false, then no longer explore that the whole branch
+- shortest clause branching: when selecting which variable to assign, we assign the variable inside of the clause with the smallest number of unassigned variables
+
 = Implementation
 
 We implemented the program in `java`, and many different functionalities are split of into different classes. The source code is stored in the `src` directory, found in our #link("https://github.com/DSA-COSC-251-FALL-2026-GROUP-5/boolean-satisifiability-project")[github repository]. The important files include:
@@ -357,7 +368,7 @@ We implemented the program in `java`, and many different functionalities are spl
 - `DIMACS.java`: a DIMACS CNF file parser #footnote[The specification of the DIMACS CNF file can be found here https://jix.github.io/varisat/manual/0.2.0/formats/dimacs.html] <dimacs-specs>
 - `BruteForce.java`: a brute force SAT solver.
 - `DPLL.java`: a SAT solver implementation using the DPLL algorithm
-- `KISSAT.java`: a wrapper around the a state of the art SAT solver called KISSAT (used for comparison, and debugging) @kissat.
+- `KISSAT.java`: a wrapper around the a state of the art SAT solver called Kissat (used for comparison, and debugging) @kissat.
 - `KColoring`: methods to solve the K-coloring problem using SAT
 - `Sudoku.java`: methods to solve a $9 times 9$ sudoku puzzle to SAT, and then interpret the results as a solution to sudoku
 - `Main.java`: a simple CLI that accepts a SAT solver and a DIMACS CNF file as input, and returns the solution to that instance
@@ -428,41 +439,44 @@ p cnf 3 5
 
 And we can then turn this into a 2D `ArrayList`. Where we have a list of clauses, and in each clause, we have a list of literals represented as integers. In our implementation, the expression is stored as a `CNF cnf` object, which has a `cnf.expression` which is the 2D `ArrayList`, and also with it, the number of variables `cnf.variables` and the number of clauses `cnf.clauses`.
 
-To perform an assignment, we essentially have an assignment array of type `Boolean[] assignment`, which is of size `cnf.variables`. Every variable gets mapped to an index of the `assignment` array, and we say that if that particular value is `null`, then the variable is unassigned; if it's `true`, the variable is assigned to `true`; if it's `false`, the variable is assigned to `false`.
+To perform an assignment, we essentially have an assignment array of type `Boolean[] assignment`, which is of size `cnf.variables`. Every variable gets mapped to an index of the `assignment` array, and we say that if that particular value is `null`, then the variable is unassigned; if it's `true`, the variable is assigned to `true`; if it's `false`, the variable is assigned to `false`. As such, in order to assign a value to a variable, it just takes constant time.
 
 When a SAT solver finishes, it returns a `Result result`, which contains `result.satisfiable` which answers whether the expression is satisfiable, and when it is satisfiable, we can interpret `result.assignment` to be one such assignment that makes the boolean expression evaluate to `true`.
 
 = Findings
 
-Present the results of your implementation and testing.
+The test data are used from #link("https://www.cs.ubc.ca/~hoos/SATLIB/benchm.html")[this repository by the University of British Columbia]. The directory is written in the form of `uf<variable-size>-<clause-size>`, and they're all 3-SAT instances.
 
-Include:
+As for the Sudoku instances, they were generated from #link("https://qqwing.com/generate.html")[this site].
 
-• Test cases and results.
-• Execution time for different input sizes.
-• Observations about algorithm performance.
-• Solution quality, where applicable.
-• Limitations and challenges encountered.
-• Conclusions from your findings.
-
-You may include diagrams, pseudocode, screenshots, tables, graphs, or other supporting materials.
-All external sources, algorithms, diagrams, and references must be properly cited.
+Brute force could solve `uf20-91` instances, however, could not finish `uf50-218` instances in a reasonable amount of time.
 
 #figure(
   table(
-    align: (left,)*2 + (right,),
     columns: 3,
+    align: (left, right, right),
     table.hline(),
-    table.cell(colspan: 2, align(center)[Item]),[],
-    table.hline(end:2),
-    [Animal]    , [Description] , [Weight (#unit("g"))] ,
-    [Gnat     ] , [per gram]    , [#qty("13.65", "g")]      ,
-    [         ] , [each    ]    , [#qty("0.01" , "g")]       , 
-    [Gnu      ] , [stuffed ]    , [#qty("92.50", "g")]      ,
-    [Emu      ] , [stuffed ]    , [#qty("33.33", "g")]      ,
-    [Armadillo] , [frozen  ]    , [#qty("8.99" , "g")]       ,
+    [Dataset], [DPLL (s)], [Kissat (s)],
+    table.hline(),
+    [sudoku], [$6.12 times 10^(-2) plus.minus 1.23 times 10^(-2)$], [$3.79 times 10^(-3) plus.minus 6.10 times 10^(-3)$],
+    [uf20-91], [$2.75 times 10^(-4) plus.minus 3.63 times 10^(-4)$], [$3.80 times 10^(-3) plus.minus 1.82 times 10^(-3)$],
+    [uf50-218], [$4.26 times 10^(-3) plus.minus 3.88 times 10^(-3)$], [$2.11 times 10^(-3) plus.minus 1.79 times 10^(-3)$],
+    [uf100-430], [$4.02 times 10^(-1) plus.minus 4.30 times 10^(-1)$], [$2.92 times 10^(-3) plus.minus 4.66 times 10^(-3)$],
+    [uf125-538], [$3.01 plus.minus 2.69$], [$5.04 times 10^(-3) plus.minus 6.04 times 10^(-3)$],
+    [uf150-645], [$1.85 times 10^(1) plus.minus 2.41 times 10^(1)$], [$3.84 times 10^(-3) plus.minus 1.47 times 10^(-2)$],
     table.hline(),
   ),
-  caption: [Results of measuring different types of frozen perishables.
-    The description tells how each item is prepared.]
-)<tab:data>
+  caption: [time trial results written in $mu plus.minus sigma$ seconds],
+)<time-trial-results>
+
+DPLL hits a wall at `uf175-753` instances, where it took `11m25.264s` to complete `uf175-01.cnf.`, meaning that it would take approximately `19h` to finish the whole dataset of size 100. Kissat has no problem with that dataset, completing it in $5.42 times 10^(-3) plus.minus 1.48 times 10^(-2)$ seconds. Also, strangely enough, Kissat's time to solve doesn't necessary increase with input size, even though we have a strictly increasing trend with the DPLL algorithm.
+
+Notice that our Sudoku instance contains $729$ variables, and at least $11988$ clauses, however, our DPLL algorithm can handle that relatively quickly. This suggests that whether our program can evaluate a SAT instance quickly not only depends on the number of variables, but also the structure of our SAT instance as well. If our SAT instance have many simplifications, our algorithm would then be able to complete the problem in a reasonable amount of time. In section @sudoku-to-sat, we mentioned that the constraint that at most one digit must be present in every row, column, and sub-square is redundant because it has been implied by the _at least one_ constraint. Regardless, if we disregard that constraint, Kissat would still be able to solve it, however, our DPLL algorithm could no longer solve it in a reasonable amount of time because the structure wasn't well suited to the simplifications that DPLL makes.
+
+This means that the DPLL algorithm is an improvement over the brute force approach, as it allows us to solve bigger problems that brute force search could not handle, such as the $9 times 9$ sudoku grid, or even to figure out whether the provincial map of Cambodia is 3-colourable.
+
+Cambodia has 25 provinces, and so, to try to color that map using 3 colors, we would need $25 times 3 = 75$ boolean variables. This cannot be done reasonably using bruteforce search. However, with DPLL, the program terminates in a reasonable amount of time (around $0.018$ seconds). Given that the graph of Cambodia (seen in `dataset/cambodia.txt`) is correct, the SAT problem is unsatisfiable, thus proving that the map of Cambodia is not 3-colourable.
+
+= Conclusion and Limitations
+
+The DPLL algorithm is a big step up from brute force search, however, when compared against a state-of-the-art solver such as Kissat, we still see that there are limitations, in that the structure has to be well suited for DPLL (as seen in the redundant constraints needed for Sudoku); whereas a more modern solver like Kissat can handle more flexible SAT structures (it doesn't need the redundant constraints for Sudoku). Moreover, Kissat can tackle bigger SAT instances of many more variables, while DPLL starts to struggle after hundreds of variables. Kissat implements a more general technique for SAT solving called conflict-driven clause learning (CDCL), which is the successor of DPLL @kissat. As such, practically, there are still many more techniques one can apply to create better SAT solvers. And because SAT solvers can act as a generic black box solver for many different problems, improving a SAT solver's efficiency has a wide ranging impact those problems; creating incentive to further improve SAT solvers in the future.

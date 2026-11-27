@@ -30,7 +30,6 @@ class Sudoku{
 
   public static Integer[] satAssignmentToSolution(Result result){
     Integer[] solution = new Integer[81];
-    // TODO: fill in the blank (interpret the results)
     for (int n = 0; n < result.assignment.length; n++){
       if (!result.assignment[n]){
         // if we didn't assign it, whatever

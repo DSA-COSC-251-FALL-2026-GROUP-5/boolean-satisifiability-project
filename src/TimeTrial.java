@@ -10,15 +10,17 @@ class TimeTrial{
       System.out.println("Please provide a directory path as the first argument, and the path to results file as the next argument");
       return;
     }
+
     File dir = new File(args[0]);
     File[] files = dir.listFiles();
-    System.out.println(files);
     for (int i = 0; i < files.length; i++){
+      //CNF cnf = DIMACS.parseFile(files[i].toString());
       long startTime = System.nanoTime();
-      CNF cnf = DIMACS.parseFile(files[i].toString());
-      DPLL.sat(cnf);
+      //DPLL.sat(cnf);
+      KISSAT.solve(files[i].toString());
       long endTime = System.nanoTime();
       try{
+        System.out.println(files[i].toString());
         Files.writeString(Path.of(args[1]),
           String.format("%s, %s\n",
             files[i].toString(),
@@ -27,10 +29,10 @@ class TimeTrial{
           StandardOpenOption.APPEND
         );
       }
+
       catch(IOException e){
         e.printStackTrace();
       }
     }
-
   }
 }
