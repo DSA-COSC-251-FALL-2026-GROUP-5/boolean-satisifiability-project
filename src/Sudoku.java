@@ -238,24 +238,23 @@ class Sudoku{
 
   public static void main(String[] args) {
     String puzzleAsString = ".......6.4.18.35..97.5.4.1..9....1...857......1.4.57.....1...........358..3..7...";
-    System.out.println(puzzleAsString);
-    Integer[] puzzle = puzzleStringToInteger(puzzleAsString);
+    Integer[] puzzle = Sudoku.puzzleStringToInteger(puzzleAsString);
     CNF sudokuAsSat = Sudoku.toSat(puzzle);
-    String sudokuAsDIMACS = DIMACS.toDIMACS(sudokuAsSat);
-    String path = "dataset/sudoku/sudoku002.cnf";
-    try{
-      Files.writeString(Paths.get(path),
-        sudokuAsDIMACS
-      );
-    }
-    catch (IOException e){
-      e.printStackTrace();
-    }
+    //String sudokuAsDIMACS = DIMACS.toDIMACS(sudokuAsSat);
+    //String path = "dataset/sudoku/sudoku002.cnf";
+    //try{
+    //  Files.writeString(Paths.get(path),
+    //    sudokuAsDIMACS
+    //  );
+    //}
+    //catch (IOException e){
+    //  e.printStackTrace();
+    //}
     //Result result = KISSAT.solve(path);
-    Result result = DPLL.sat(DIMACS.parseFile(path));
+    Result result = DPLL.sat(sudokuAsSat);
     System.out.println(result);
     Integer[] solvedSudoku = Sudoku.satAssignmentToSolution(result);
     //System.out.println(Arrays.toString(solvedSudoku));
-    System.out.println(puzzleIntegerToString(solvedSudoku));
+    System.out.println(Sudoku.puzzleIntegerToString(solvedSudoku));
   }
 }

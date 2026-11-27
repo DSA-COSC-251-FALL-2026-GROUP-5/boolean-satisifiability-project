@@ -30,6 +30,12 @@ Running using bf:
 
 Make sure that you install `kissat` from [here](https://github.com/arminbiere/kissat/releases), find the binaries, and make sure that you have it in the PATH environmental variable (such that you can run the program from any working directory).
 
+```java
+String path = "dataset/uf20-91/uf20-01.cnf";
+Result result = KISSAT.solve(path);
+System.out.println(result);
+```
+
 # Brute force approach
 
 We naively try out every single possible assignment for the boolean expression. Therefore, if we have $n$ variables, we would have to search in the worst case for $2^n$ possible combinations.

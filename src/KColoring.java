@@ -173,11 +173,10 @@ class KColoring {
   }
 
   public static void main(String[] args) {
-    Graph graph = parseGraph("dataset/cambodia.txt");
+    Graph graph = KColoring.parseGraph("dataset/cambodia.txt");
     String[] myColors = { "R", "G", "B", "Y" };
     KColoring kcoloring = new KColoring(myColors, graph);
     CNF cnf = kcoloring.toSat();
-
     /*
      * String kcoloringAsDIMACS = DIMACS.toDIMACS(cnf);
      * String cnfPath = "dataset/kcoloring/kcoloring001.cnf";

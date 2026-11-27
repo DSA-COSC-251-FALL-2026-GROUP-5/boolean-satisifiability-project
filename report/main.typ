@@ -76,7 +76,7 @@ The SAT problem then asks:
 
 $
 exists bold(x) in bb(B)^n "such that" f(bold(x)) = 1
-$
+$<satisifiability-definition>
 
 If this evaluates to true, then we say that the boolean function $f$ is satisfiable. Otherwise, we say that it isn't satisfiable.
 
@@ -141,7 +141,7 @@ $
 not exists bold(x) in bb(B)^n "such that" f(bold(x)) xor g(bold(x)) = 1
 $
 
-=== K Coloring
+=== K-Coloring <k-coloring-to-sat>
 
 The K-Coloring problem ask that given a set of vertices $V$, a set of edges $E$, and a set of colors $C$, we want to construct a coloring function $c: V -> C$ with the constraint that $forall (v_1, v_2) in E, c(v_1) != c(v_2)$.
 
@@ -166,7 +166,7 @@ Our constraint $f(bold(x))$ is the conjunction of these sub-constraints:
   Similarly, an existential quantifier $exists z in Z, f(z)$ can be expanded as $or.big_(z in Z) f(z)$.
 ]
 
-=== Sudoku
+=== Sudoku <sudoku-to-sat>
 
 For sudoku, we have a set of digits $D$, a set of columns $C$, and a set of rows $R$. Similar to the K-Coloring problem, We define boolean variables:
 
@@ -212,19 +212,21 @@ Suppose we have a boolean function $f:bb(B)^n -> bb(B)$, and we have an input $b
 - and so on...
 - after we have checked $bold(x) = (1, 1, ..., 1, 1)$, and the formula still isn't true, then our boolean formula is not satisfiable.
 
-Essentially, we can treat $bold(x)$ as a binary number, and we just increment that number by one until we reach $1111...1111_2$.
+Essentially, we can treat $bold(x)$ as a binary number, and we just increment that number by one until we reach $1111...1111_2$. Thus, the time complexity is clearly exponential time.
 
 == DPLL
+
+DPLL is an optimization over brute force search, which uses some simplifications to half the number of assignments we have to check. It returns an exactly solution to SAT.
 
 First of all, DPLL requires that we represent our boolean function in conjunctive normal form (CNF). If the conjunction operator is analogous to multiplication operator, and the disjunction operator is analogous to the addition operator, then the CNF is analogous to the product of sums form.
 
 An example of a CNF formula:
 
 $
-(a or b or c) and (c or d or not e) and (f or g or h)
+(x_1 or x_2 or x_3) and (x_3 or x_4 or not x_5) and (x_6 or x_7 or x_8)
 $
 
-The DPLL algorithm is an algorithm that does depth first search on the "assignment tree".
+The DPLL algorithm is an algorithm that does depth first search on the "assignment tree". 
 
 #align(center)[
   #tidy-tree-graph(
@@ -255,7 +257,9 @@ However, what's special is that it uses mechanisms like:
 - unit-propagation
 - pure literal elimination
 
-Which is capable of removing entire branches, thus, reducing our search space significantly. 
+Which is capable of removing entire branches, thus, reducing our search space significantly. Nonetheless, this algorithm is still exponential time in the worst case because we can say that every time we performed a simplification, we reduce the search space in half. Let's say that we can perform such simplifications $c$ times for a particular boolean function. This means that the run time is $O(l 2^n / 2^c)$ but since $C = 1/2^c$ is still a constant, it's still $O(l 2^n)$.
+
+Although it doesn't improve it's asymptotic time complexity, for SAT instances where you can perform a lot of simplifications, it can turn a SAT instance that could not be solved in a reasonable amount of time using bruteforce, to something that you can solve. For instance, a $9 times 9$ sudoku encoded into SAT using the method in section @sudoku-to-sat can be solved in a reasonable amount of time using DPLL, however, it could not be solved using brute force (since we would need to evaluate $2^729$ assignments).
 
 === Unit Propagation
 
@@ -286,6 +290,7 @@ Thus, our search tree gets reduced to:
 
 As such, whenever we can perform unit propagation, we reduce the amount of leaves we need to check by a half. If we get lucky and can perform many instances of unit-propagation, it may allow us to solve SAT instances of many more variables compared to the brute force approach.
 
+
 === Pure Literal Elimination
 
 A pure literal is a literal where at every instance where it appears, it has the same sign.
@@ -294,7 +299,7 @@ For example:
 
 $
 f(x_1, x_2, x_3) = (not x_1 or x_2) and (x_3 or not x_1) and (x_2 or x_3) and (not x_2 or x_3) and (not x_1 or not x_3)
-$
+$ <pure-literal-elimination-example>
 
 Notice that $x_1$ is a pure literal, because every time it appears, it has the same sign $not x_1$.
 
@@ -304,46 +309,143 @@ $
 f(0, x_2, x_3) = (1 or x_2) and (x_3 or 1) and (x_2 or x_3) and (not x_2 or x_3) and (1 or not x_3) = (x_2 or x_3) and (not x_2 or x_3)
 $
 
-Notice that we removed an entire branch where we set $x_1 = 1$, because, we can argue that the original function $f(x_1, x_2, x_3)$ is satisfiable, if and only if $f(0, x_2, x_3)$ is satisfiable.
+Notice that we removed an entire branch where we set $x_1 = 1$, because, we can argue that the original function $f(x_1, x_2, x_3)$ is satisfiable, if and only if $f(0, x_2, x_3)$ is satisfiable. We will prove this at section @pure-literal-elimination-proof.
 
-The reason why we can do it is as follows:
-- let's say that we have a CNF formula $F$
-- when we notice a pure literal $x_i$, we can split the clauses into those with $x_i$ (say $F_1$) and those without $x_i$ say $F_0$, and state $F = F_0 and F_1$
-- we also know that in order for a boolean function in CNF to be satisfied, there needs to be some assignment such that all of its clauses must evaluate to $1$
-- now if $F$ is satisfiable, then there must be an assignment that makes $F_0 = 1$ and $F_1 = 1$
-- because $x_i$ is a pure literal, by setting $x_i = 1$ (or $x_i = 0$ if there's a negation sign), all clauses containing $x_i$ are satisfied, thus $F_1 = 1$
-- as such, because $x_i$ doesn't appear in $F_0$, if we can find an assignment so that $F_0 = 1$, then we would then know $F = 1$ for that assignment, thus making it satisfiable
+Notice that we can then perform pure literal elimination again on $x_3$ by setting $x_3 = 1$.
 
+$
+f(0, x_2, 1) = (x_2 or 1) and (not x_2 or 1) = 1
+$
 
+Thus, the specific assignment $x_1 = 0$, $x_2 = 0$, and $x_3 = 1$ would satisfy it.
 
-• How the algorithm works.
-• Important steps or operations.
-• Time complexity analysis.
-• Advantages and limitations.
-• Whether the solution is exact, approximate, or heuristic.
+==== Proof of pure literal elimination <pure-literal-elimination-proof>
+
+To formalize the simplification, we need to define some variables and functions. We have a boolean function $f: bb(B)^n -> bb(B)$ in CNF. Let's say that we have a pure literal $x_i$ (and without loss of generality, assume that it's not negated). We can then split the boolean function into the conjunction of 2 functions, one containing $x_i$ and one that doesn't contain $x_i$.
+
+$
+f(bold(y), x_i) = f_0(bold(y)) and f_1(bold(y), x_i)
+$<pure-literal-partition>
+
+For some $bold(y) in bb(B)^(n - 1)$, $x_i in bb(B)$.
+
+And to make use of the fact that $x_i$ is a pure literal, and that everything is in CNF, we can write:
+
+$
+f_1(bold(y), x_i) = x_i or g(bold(y))
+$
+
+What we want to prove is, given that $x_i$ is a pure literal:
+
+$
+f(bold(y), x_i) "is satisfiable" <=> f_0(bold(y)) "is satisfiable"
+$
+
+Why would this be helpful? Because if we knew that this is true, then working on $f_0(bold(y))$ would be easier because you'd now only have to check $n - 1$ variables rather than $n$ variables.
+
+Now we to prove this _if and only if_ statement, we must prove it in the forward direction, and the reverse direction.
+
+For the forward direction we first assume that $f(bold(y), x_i) "is satisfiable"$. Because $f(bold(y), x_i)$ is satisfiable, this also means $f_0(bold(y)) and f_1(bold(y), x_i)$ is satisfiable. Now, what it means for something to be satisfiable is when there exists $bold(y) in bb(B)^(n - 1)$, and $x_i in bb(B)$ in order to make the whole $f(bold(y), x_i) = 1$. Now since we assumed that to be the case, then clearly that particular assignment would also make $f_0(bold(y)) = 1$ and $f_1(bold(y), x_i) = 1$. Thus it is implied that $f_0(bold(y)) = 1$ for that particular assignment, making $f_0(bold(y))$ satisfiable.
+
+For the reverse direction, we assume that $f_0(bold(y))$ is satisfiable. Now when we choose $x_i = 1$, it automatically makes $f_1(bold(y), x_i) = x_i or g(bold(y)) = 1$. This makes $f_1(bold(y), x_i)$ satisfiable. Because both $f_0(bold(y))$ and $f_1(bold(y), x_i)$ is satisfiable, putting the two pieces together gives you $f_0(bold(y)) and f_1(bold(y), x_i) = f(bold(y), x_i)$ is satisfiable $qed$.
 
 = Implementation
 
-Describe how your group implemented the algorithm.
-Include:
+We implemented the program in `java`, and many different functionalities are split of into different classes. The source code is stored in the `src` directory, found in our #link("https://github.com/DSA-COSC-251-FALL-2026-GROUP-5/boolean-satisifiability-project")[github repository]. The important files include:
 
-• Programming language used.
-• Important components of the program.
-• Data structures used.
-• How to run and use the program.
+- `CNF.java`: the internal representation of our boolean expression. We represented the CNF using a 2D `ArrayList` of integers.
+- `DIMACS.java`: a DIMACS CNF file parser #footnote[The specification of the DIMACS CNF file can be found here https://jix.github.io/varisat/manual/0.2.0/formats/dimacs.html] <dimacs-specs>
+- `BruteForce.java`: a brute force SAT solver.
+- `DPLL.java`: a SAT solver implementation using the DPLL algorithm
+- `KISSAT.java`: a wrapper around the a state of the art SAT solver called KISSAT (used for comparison, and debugging) @kissat.
+- `KColoring`: methods to solve the K-coloring problem using SAT
+- `Sudoku.java`: methods to solve a $9 times 9$ sudoku puzzle to SAT, and then interpret the results as a solution to sudoku
+- `Main.java`: a simple CLI that accepts a SAT solver and a DIMACS CNF file as input, and returns the solution to that instance
+- `Test.java`: a small test suite to check for DPLL algorithm's correctness.
+
+== Usage
+
+To build the program, run:
+
+```
+./build
+```
+
+in the base directory of the project. On windows, make sure that `javac` is included in your PATH environmental variable, and run the command inside of the build script.
+
+The `Main` program accepts a CNF statement using the DIMAC CNF file #footnote(<dimacs-specs>). To use the brute force algorithm:
+
+```
+./run Main bf ../dataset/uf20-91/uf20-01.cnf
+```
+
+And to run it using the DPLL algorithm:
+
+```
+./run Main dpll ../dataset/uf20-91/uf20-01.cnf
+```
+
+Converting a graph coloring problem can be done as such:
+
+```java
+Graph graph = KColoring.parseGraph("dataset/cambodia.txt");
+String[] myColors = { "R", "G", "B", "Y" };
+KColoring kcoloring = new KColoring(myColors, graph);
+CNF cnf = kcoloring.toSat();
+Result result = DPLL.sat(cnf);
+Graph coloredGraph = kcoloring.satAssignmentToSolution(result);
+System.out.println(coloredGraph.asFileContent());
+```
+
+Converting a Sudoku problem can be done as such:
+
+```java
+String puzzleAsString = ".......6.4.18.35..97.5.4.1..9....1...857......1.4.57.....1...........358..3..7...";
+Integer[] puzzle = Sudoku.puzzleStringToInteger(puzzleAsString);
+CNF sudokuAsSat = Sudoku.toSat(puzzle);
+Result result = DPLL.sat(sudokuAsSat);
+System.out.println(result);
+Integer[] solvedSudoku = Sudoku.satAssignmentToSolution(result);
+System.out.println(Sudoku.puzzleIntegerToString(solvedSudoku));
+```
+
+#note[
+  When a graph can't be colored with the set of colors given, or when a sudoku puzzle cannot be solved, the SAT problem will be unsatisfiable.
+]
+
+== Data structure and representation
+
+Since our SAT solver accepts the DIMACS CNF file, we expect that our boolean expression will be stored in CNF. This can be done using an 2D `ArrayList` of `Integers`. Moreover, our literals will be represented using `Integer` (rather than symbols) from $1$ onwards, with negative signs indicating a negation in front. For example, the boolean expression @pure-literal-elimination-example can be written in DIMACS CNF as such:
+
+```
+p cnf 3 5
+-1 2 0
+3 -1 0
+2 3 0
+-2 3 0
+-1 -3 0
+```
+
+And we can then turn this into a 2D `ArrayList`. Where we have a list of clauses, and in each clause, we have a list of literals represented as integers. In our implementation, the expression is stored as a `CNF cnf` object, which has a `cnf.expression` which is the 2D `ArrayList`, and also with it, the number of variables `cnf.variables` and the number of clauses `cnf.clauses`.
+
+To perform an assignment, we essentially have an assignment array of type `Boolean[] assignment`, which is of size `cnf.variables`. Every variable gets mapped to an index of the `assignment` array, and we say that if that particular value is `null`, then the variable is unassigned; if it's `true`, the variable is assigned to `true`; if it's `false`, the variable is assigned to `false`.
+
+When a SAT solver finishes, it returns a `Result result`, which contains `result.satisfiable` which answers whether the expression is satisfiable, and when it is satisfiable, we can interpret `result.assignment` to be one such assignment that makes the boolean expression evaluate to `true`.
 
 = Findings
 
 Present the results of your implementation and testing.
+
 Include:
+
 • Test cases and results.
 • Execution time for different input sizes.
 • Observations about algorithm performance.
 • Solution quality, where applicable.
 • Limitations and challenges encountered.
 • Conclusions from your findings.
-You may include diagrams, pseudocode, screenshots, tables, graphs, or other supporting materi-
-als.
+
+You may include diagrams, pseudocode, screenshots, tables, graphs, or other supporting materials.
 All external sources, algorithms, diagrams, and references must be properly cited.
 
 #figure(
