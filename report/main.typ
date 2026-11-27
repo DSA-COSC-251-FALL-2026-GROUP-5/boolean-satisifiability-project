@@ -286,6 +286,36 @@ Thus, our search tree gets reduced to:
 
 As such, whenever we can perform unit propagation, we reduce the amount of leaves we need to check by a half. If we get lucky and can perform many instances of unit-propagation, it may allow us to solve SAT instances of many more variables compared to the brute force approach.
 
+=== Pure Literal Elimination
+
+A pure literal is a literal where at every instance where it appears, it has the same sign.
+
+For example:
+
+$
+f(x_1, x_2, x_3) = (not x_1 or x_2) and (x_3 or not x_1) and (x_2 or x_3) and (not x_2 or x_3) and (not x_1 or not x_3)
+$
+
+Notice that $x_1$ is a pure literal, because every time it appears, it has the same sign $not x_1$.
+
+Thus, what we can do is reduce the search space by making $not x_1 = 1$ or $x_1 = 0$ in order to satisfy every clause that it appears in, without affecting the state of the clauses in which it doesn't appear in.
+
+$
+f(0, x_2, x_3) = (1 or x_2) and (x_3 or 1) and (x_2 or x_3) and (not x_2 or x_3) and (1 or not x_3) = (x_2 or x_3) and (not x_2 or x_3)
+$
+
+Notice that we removed an entire branch where we set $x_1 = 1$, because, we can argue that the original function $f(x_1, x_2, x_3)$ is satisfiable, if and only if $f(0, x_2, x_3)$ is satisfiable.
+
+The reason why we can do it is as follows:
+- let's say that we have a CNF formula $F$
+- when we notice a pure literal $x_i$, we can split the clauses into those with $x_i$ (say $F_1$) and those without $x_i$ say $F_0$, and state $F = F_0 and F_1$
+- we also know that in order for a boolean function in CNF to be satisfied, there needs to be some assignment such that all of its clauses must evaluate to $1$
+- now if $F$ is satisfiable, then there must be an assignment that makes $F_0 = 1$ and $F_1 = 1$
+- because $x_i$ is a pure literal, by setting $x_i = 1$ (or $x_i = 0$ if there's a negation sign), all clauses containing $x_i$ are satisfied, thus $F_1 = 1$
+- as such, because $x_i$ doesn't appear in $F_0$, if we can find an assignment so that $F_0 = 1$, then we would then know $F = 1$ for that assignment, thus making it satisfiable
+
+
+
 • How the algorithm works.
 • Important steps or operations.
 • Time complexity analysis.
